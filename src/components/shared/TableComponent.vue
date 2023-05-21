@@ -1,35 +1,22 @@
-<script lang="ts">
-import { computed, onMounted } from 'vue'
-export default {
-  props: ['data', 'header'],
-  setup(props, ctx) {
-    const hasHeader = computed(() => {
-      return !!props.header
-    })
-    const hasData = computed(() => {
-      return !!props.data
-    })
-    const getKeyObject = computed(() => {
-      return Object.keys(props.data.length > 0 ? props.data[0] : { id: 1 })
-    })
-    const hasAction = computed(() => {
-      return !!ctx.slots.action
-    })
-    onMounted(() => {})
-    return {
-      hasHeader,
-      hasData,
-      getKeyObject,
-      hasAction
-    }
-  }
-}
-</script>
-
 <template>
   <div>
+    <div v-show="hasSearchBar">
+      <input type="text" v-model="searchBarValue" placeholder="search Any Word In DataSet" />
+    </div>
     <table class="dataTable">
+      <caption></caption>
       <thead>
+        <tr v-show="hasFilter">
+          <th v-show="!!header" v-for="filter in filterBar" :key="filter">
+            {{ filter.name }}:
+            <input
+              v-if="filter.type === 'input'"
+              type="text"
+              v-model="filter.value"
+              :placeholder="filter.placeHolder"
+            />
+          </th>
+        </tr>
         <tr v-if="hasHeader">
           <th v-show="!!header" v-for="_head in header" :key="_head">
             {{ _head }}
@@ -43,8 +30,8 @@ export default {
           <th v-if="hasAction">action</th>
         </tr>
       </thead>
-      <tbody v-if="data.length > 0">
-        <tr v-for="(row, index) in data" :key="index">
+      <tbody v-if="dataInTable.length > 0">
+        <tr v-for="(row, index) in dataInTable" :key="index">
           <td>{{ index + 1 }}</td>
           <td v-for="cell in row" :key="cell">{{ cell }}</td>
           <td v-if="hasAction">
@@ -72,6 +59,67 @@ export default {
     </table>
   </div>
 </template>
+
+<script lang="ts">
+import { computed, onMounted, ref } from 'vue'
+export default {
+  props: ['data', 'header', 'filterBar', 'searchBar'],
+  setup(props, ctx) {
+    const dataSearchBar = computed(() => {
+      return props.data.filter((e: any) => {
+        let stringSearch = ''
+        props.filterBar.forEach((filterkey: any) => {
+          stringSearch += e[filterkey.key].toString().toLowerCase()
+        })
+        return stringSearch.includes(searchBarValue.value.toLocaleLowerCase())
+      })
+    })
+    const dataInTable = computed(() => {
+      if (props.data) {
+        let res = dataSearchBar.value
+        props.filterBar.forEach((filterkey: any) => {
+          res = res.filter((e: any) => {
+            return e[filterkey.key].toString().toLowerCase().includes(filterkey.value.toLowerCase())
+          })
+        })
+        return res
+      } else {
+        return []
+      }
+    })
+    const searchBarValue = ref('')
+    const hasSearchBar = computed(() => {
+      return props.searchBar
+    })
+    const hasHeader = computed(() => {
+      return !!props.header
+    })
+    const hasData = computed(() => {
+      return !!props.data
+    })
+    const getKeyObject = computed(() => {
+      return Object.keys(props.data.length > 0 ? props.data[0] : { id: 1 })
+    })
+    const hasAction = computed(() => {
+      return !!ctx.slots.action
+    })
+    const hasFilter = computed(() => {
+      return !!props.filterBar
+    })
+    onMounted(() => {})
+    return {
+      hasHeader,
+      hasData,
+      dataInTable,
+      getKeyObject,
+      searchBarValue,
+      hasAction,
+      hasFilter,
+      hasSearchBar
+    }
+  }
+}
+</script>
 <style scope>
 table.dataTable {
   border-collapse: collapse;
