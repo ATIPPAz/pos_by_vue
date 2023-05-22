@@ -24,5 +24,6 @@ export default {
   padding: 24px;
   color: black;
   cursor: pointer;
+  font-size: 16px;
 }
 </style>

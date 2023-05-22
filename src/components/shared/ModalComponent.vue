@@ -1,7 +1,7 @@
 <script lang="ts">
 import { computed } from 'vue'
 export default {
-  props: ['title', 'open'],
+  props: ['title', 'open', 'saveFunction'],
   emits: ['onClose'],
   setup(props, ctx) {
     function close() {
@@ -30,7 +30,7 @@ export default {
       <div class="model-footer">
         <div>
           <button @click="close" class="closeDialogButton gray">close</button>
-          <button class="selectItem blue">ok</button>
+          <button @click="saveFunction" class="selectItem blue">ok</button>
         </div>
       </div>
     </div>

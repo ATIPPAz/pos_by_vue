@@ -4,4 +4,5 @@ export interface UnitCreate {
 export interface Unit {
   unitId: number
   unitName: string
+  id?: number
 }

@@ -31,7 +31,15 @@ export default {
 </script>
 
 <template>
-  <div v-for="manu in manus" :key="manu.id">
-    <Card @onClick="cardClick" :item="manu"> {{ manu.label }} </Card>
+  <div class="d-flex" style="justify-content: space-around">
+    <div v-for="manu in manus" :key="manu.id">
+      <Card
+        @onClick="cardClick"
+        style="width: 225px; text-align: center; text-decoration: underline"
+        :item="manu"
+      >
+        {{ manu.label }}
+      </Card>
+    </div>
   </div>
 </template>

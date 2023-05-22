@@ -33,7 +33,9 @@
       <tbody v-if="dataInTable.length > 0">
         <tr v-for="(row, index) in dataInTable" :key="index">
           <td>{{ index + 1 }}</td>
-          <td v-for="cell in row" :key="cell">{{ cell }}</td>
+          <td v-for="cell in Object.keys(row)" :key="cell" v-show="cell !== 'id'">
+            {{ row[cell] }}
+          </td>
           <td v-if="hasAction">
             <slot name="action" :data="row"></slot>
           </td>
@@ -66,6 +68,7 @@ export default {
   props: ['data', 'header', 'filterBar', 'searchBar'],
   setup(props, ctx) {
     const dataSearchBar = computed(() => {
+      // const key: any = []
       return props.data.filter((e: any) => {
         let stringSearch = ''
         props.filterBar.forEach((filterkey: any) => {
@@ -73,6 +76,18 @@ export default {
         })
         return stringSearch.includes(searchBarValue.value.toLocaleLowerCase())
       })
+      // .map((e: any) => {
+      //   if (key.length === 0) {
+      //     for (const keyObject of Object.keys(e)) {
+      //       if (keyObject !== 'id') key.push(keyObject)
+      //     }
+      //   }
+      //   const res: any = {}
+      //   key.forEach((key: any) => {
+      //     res[key] = e[key]
+      //   })
+      //   return res
+      // })
     })
     const dataInTable = computed(() => {
       if (props.data) {
@@ -113,6 +128,7 @@ export default {
       dataInTable,
       getKeyObject,
       searchBarValue,
+      dataSearchBar,
       hasAction,
       hasFilter,
       hasSearchBar
