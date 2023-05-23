@@ -2,6 +2,9 @@
 import Card from '../../shared/CardComponent.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { endpoint } from '@/composables/api'
+import {} from '@/composables/api'
+
 interface Manu {
   id: number
   path: string

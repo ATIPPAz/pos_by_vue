@@ -1,3 +1,14 @@
 <template>
-  <div>Pos</div>
+  <PosPage />
 </template>
+<script lang="ts">
+import PosPage from '../components/pages/pos/PosPage.vue'
+export default {
+  components: {
+    PosPage
+  },
+  setup() {
+    return {}
+  }
+}
+</script>

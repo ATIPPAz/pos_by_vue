@@ -1,4 +1,4 @@
-export interface Api<T> {
+export interface Api<T = any> {
   statusCode: number
   data: T
 }

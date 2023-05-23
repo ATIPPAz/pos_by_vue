@@ -1,13 +1,17 @@
-import { getRequest, createRequest } from './fetchHelper.js'
+import { getRequest, createRequest } from '../../composables/api/fetchHelper.js'
 import { endpoint } from './endpoint.js'
+import { Api } from '../../interface/api/response.Interface.js'
+
 const controller = 'receipt'
-export async function getAllreceipt(objQueryString = {}) {
-  let queryString = '?'
-  for (const key in objQueryString) {
-    queryString += `${key}=${objQueryString[key]}&`
-  }
-  queryString = queryString.slice(0, -1)
-  return await getRequest(`${endpoint}${controller}/getAllReceipt${queryString}`)
+export async function getAllreceipt(start = '', end = ''): Promise<Api<>> {
+  const queryString = new URLSearchParams({ startDate: start, endDate: end })
+  return await getRequest(`${endpoint}${controller}/getAllReceipt?${queryString.toString()}`)
+    .then((e) => {
+      return e.json() as Api<Receipt>
+    })
+    .catch((e) => {
+      return { statusCode: 500, data: null }
+    })
 }
 
 export async function getOneReceipt(id) {

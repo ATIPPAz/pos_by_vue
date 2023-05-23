@@ -4,7 +4,7 @@ import UnitView from '../views/UnitView.vue'
 import PosView from '../views/PosView.vue'
 import ItemView from '../views/ItemView.vue'
 import ReceiptView from '../views/ReceiptView.vue'
-import ReceiptDetailView from '../views/ReceiptDetailView.vue'
+// import ReceiptDetailView from '../views/ReceiptDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,6 +12,16 @@ const router = createRouter({
     {
       path: '/',
       redirect: '/home'
+    },
+    {
+      path: '/receipt/:receiptId',
+      name: 'receiptDetail',
+      component: () => import('../views/ReceiptDetailView.vue')
+    },
+    {
+      path: '/receipt',
+      name: 'receipt',
+      component: ReceiptView
     },
     {
       path: '/home',
@@ -28,16 +38,12 @@ const router = createRouter({
       name: 'item',
       component: ItemView
     },
-    {
-      path: '/receipt',
-      name: 'receipt',
-      component: ReceiptView
-    },
-    {
-      path: '/receipt/:receiptId',
-      name: 'receipt',
-      component: ReceiptDetailView
-    },
+
+    // {
+    //   path: '/receiptDetail/:receiptId',
+    //   name: 'receiptDetail',
+    //   component: ReceiptDetailView
+    // },
     {
       path: '/pos',
       name: 'pos',

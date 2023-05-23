@@ -9,17 +9,17 @@
 body {
   font-size: 16px;
 }
-a,
+/* a,
 .green {
   text-decoration: none;
   color: hsla(160, 100%, 37%, 1);
   transition: 0.4s;
-}
+} */
 
 @media (hover: hover) {
-  a:hover {
+  /* a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
-  }
+  } */
 }
 
 @media (min-width: 1024px) {
@@ -187,13 +187,7 @@ button {
   padding: 6px 8px;
   border: 0px solid black;
 }
-.backBtn {
-  background-color: #6c757d;
-  padding: 6px 12px;
-  color: white;
-  border-radius: 5px;
-  text-decoration: none;
-}
+
 select {
   border-radius: 5px;
   padding: 4px;

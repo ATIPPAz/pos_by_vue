@@ -1,16 +1,5 @@
-import type { Api } from '../interface/ResponseInterface.js'
-
-export async function getRequest(path: string): Promise<any> {
-  let res
-  await fetch(path)
-    .then((e) => {
-      res = e.json()
-    })
-    .catch((er) => {
-      console.log(er)
-      res = { statusCode: 500, data: { massage: 'server error' + er } }
-    })
-  return res
+export function getRequest(path: string) {
+  return fetch(path)
 }
 
 export async function updateRequest(path = '', data = {}, type = '') {

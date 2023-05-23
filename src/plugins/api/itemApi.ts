@@ -1,4 +1,4 @@
-import { getRequest, createRequest } from './fetchHelper.js'
+import { getRequest, createRequest } from '../../composables/api/fetchHelper.js'
 import { endpoint } from './endpoint.js'
 const controller = 'item'
 export async function getItem() {

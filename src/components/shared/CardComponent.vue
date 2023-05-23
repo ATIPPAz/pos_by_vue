@@ -4,8 +4,19 @@
   </div>
 </template>
 <script lang="ts">
-export default {
-  props: ['item'],
+import { type PropType, defineComponent } from 'vue'
+export default defineComponent({
+  props: {
+    item: {
+      type: Object as PropType<any>,
+      required: true
+    }
+  },
+  emits: {
+    onClick(value: any) {
+      return true
+    }
+  },
   setup(props, { emit }) {
     function cardClick() {
       emit('onClick', props.item)
@@ -14,7 +25,7 @@ export default {
       cardClick
     }
   }
-}
+})
 </script>
 <style>
 .card {

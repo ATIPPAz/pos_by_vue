@@ -1,13 +1,10 @@
 <template>
-  <div class="container">
-    <a href="/">กลับ</a>
-    <div class="card-content" style="margin-top: 24px">
-      <div class="card-header">ตั้งค่าหน่วยนับ</div>
+  <MainPage title="ตั้งค่าหน่วยนับ">
+    <template #content>
       <div class="j-end" style="margin-bottom: 14px">
         <button id="addButton" class="blue" @click="createUnitModalOpen">เพิ่ม</button>
       </div>
-      {{ unitNameData }}
-      <DataTable :filterBar="filter" :data="unitNameData" :header="header" :searchBar="true">
+      <DataTable :data="unitNameData" :column="header" :option="option">
         <template #action="data"
           ><div>
             <button @click="editUnit(data.data)">edit</button>
@@ -15,27 +12,33 @@
           </div></template
         >
       </DataTable>
-    </div>
-    <Modal :open="open" :saveFunction="saveFunction" :title="title" @onClose="closeDialog">
-      <template #body>
-        ชื่อหน่วย:<br />
-        <input type="text" v-model="unitInput" />
-      </template>
-    </Modal>
-  </div>
+
+      <Modal :open="open" :saveFunction="saveFunction" :title="title" @onClose="closeDialog">
+        <template #body>
+          ชื่อหน่วย:<br />
+          <input type="text" v-model="unitInput" />
+        </template>
+      </Modal>
+    </template>
+  </MainPage>
 </template>
 
 <script lang="ts">
+import MainPage from '../../shared/PageDesign.vue'
+
 import Modal from '../../shared/ModalComponent.vue'
-import DataTable from '../../shared/TableComponent.vue'
+import DataTable, { type IColumn, type TableOption } from '../../shared/TableComponent.vue'
+
 import type { Unit } from '../../../interface/UnitInterface'
 import { onMounted, ref, computed, inject } from 'vue'
+import { samplePluginSymbol } from '@/plugins/sample'
 export default {
-  components: { DataTable, Modal },
+  components: { DataTable, Modal, MainPage },
   setup() {
     const open = ref(false)
     const title = ref('')
-    const $api = inject('api')
+    const $api = inject(samplePluginSymbol)!
+    $api.getCount()
     const unitInput = ref('')
     const unitData = ref<Unit[]>([])
     const idSelect = ref(0)
@@ -49,7 +52,16 @@ export default {
       const index = unitData.value.findIndex((e: Unit) => e.unitId === data.id)
       unitData.value.splice(index, 1)
     }
-    const header = ref(['ลำดับ', 'ชื่อ', 'ดำเนินการ'])
+
+    const header = ref<Icolumn[]>([
+      {
+        key: 'unitName',
+        label: 'ชื่อ'
+      }
+    ])
+    const option = ref<TableOption>({
+      actionLabel: 'ดำเนินการ'
+    })
     function saveFunction() {
       if (title.value === 'เพิ่มสินค้า') {
         saveChange()
@@ -105,6 +117,7 @@ export default {
       unitNameData,
       unitData,
       header,
+      option,
       editUnit,
       saveFunction,
       deleteUnit,
