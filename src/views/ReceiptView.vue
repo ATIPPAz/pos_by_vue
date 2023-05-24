@@ -18,16 +18,14 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from 'vue'
-import { ref, defineComponent } from 'vue'
-import { statusCode as status } from '@/interface/api'
-import { useReceiptApi } from '@/composables/api'
-import type { Receipt } from '@/interface/receipt.interface'
+import router from '@/router'
 import MainPage from '@/components/mainFrame/MainFrame.vue'
 import DataTable from '@/components/DataTable/DataTable.vue'
+import { useReceiptApi } from '@/composables/api'
+import { statusCode as status } from '@/interface/api'
+import { ref, defineComponent, computed, onMounted } from 'vue'
+import type { Receipt } from '@/interface/receipt.interface'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
-import { computed } from 'vue'
-import router from '@/router'
 export default defineComponent({
   components: {
     MainPage,
@@ -81,12 +79,10 @@ export default defineComponent({
 
     onMounted(async () => {
       await getReceipt()
-      // console.log(receiptData.value)
     })
     return {
       startDate,
       option,
-
       searchReceipt,
       openDetail,
       receiptData,
@@ -96,5 +92,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style scoped></style>

@@ -22,16 +22,26 @@
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
 export default defineComponent({
-  // props: ['title', 'open', 'saveFunction'],
   props: {
     title: {
       type: String,
       default: '',
       required: false
     },
-    open: { type: Boolean, default: false, required: true }
+    open: {
+      type: Boolean,
+      default: false,
+      required: true
+    }
   },
-  emits: ['onClose', 'onSave'],
+  emits: {
+    onClose() {
+      return true
+    },
+    onSave() {
+      return true
+    }
+  },
 
   setup(props, ctx) {
     function close() {

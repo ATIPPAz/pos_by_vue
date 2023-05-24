@@ -4,7 +4,7 @@
       <caption></caption>
       <thead>
         <tr>
-          <th>No.</th>
+          <th v-if="option.rowNumber === undefined || option.rowNumber">No.</th>
           <th :style="col.size ? `width:${col.size}` : ''" v-for="col in column" :key="col.key">
             {{ col.label }}
           </th>
@@ -13,7 +13,7 @@
       </thead>
       <tbody>
         <tr v-for="(row, index) in dataTable" :key="index">
-          <td>{{ index + 1 }}</td>
+          <td v-if="option.rowNumber === undefined || option.rowNumber">{{ index + 1 }}</td>
           <td v-for="col in column" :key="col.key">
             <div v-if="col.styleCol && col.styleCol.type === 'input:text'">
               <input
@@ -95,7 +95,6 @@ export default defineComponent({
     const hasSpecialRow = computed(() => {
       return !!ctx.slots.specialRow
     })
-
     onMounted(() => {})
     return {
       hasSpecialRow,

@@ -9,21 +9,16 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from 'vue'
 import MainPage from '@/components/mainFrame/MainFrame.vue'
-import { statusCode as status } from '@/interface/api/statusCode'
-import { ref, inject } from 'vue'
-import DataTable, { type IColumn, type TableOption } from '@/components/DataTable/DataTable.vue'
-
-import { computed } from 'vue'
-import router from '@/router'
-export default {
+import { ref, defineComponent } from 'vue'
+import DataTable from '@/components/DataTable/DataTable.vue'
+import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+export default defineComponent({
   components: {
     MainPage,
     DataTable
   },
   setup() {
-    const $api = inject('api')
     const header = ref<IColumn[]>([
       {
         key: 'receiptCode',
@@ -42,7 +37,7 @@ export default {
       option
     }
   }
-}
+})
 </script>
 
 <style scoped></style>

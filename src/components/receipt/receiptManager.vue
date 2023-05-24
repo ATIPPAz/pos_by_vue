@@ -125,22 +125,19 @@
     </template>
   </MainPage>
 </template>
+
 <script lang="ts">
 import MainPage from '@/components/mainFrame/MainFrame.vue'
 import DataTable from '@/components/DataTable/DataTable.vue'
-import type { IColumn, TableOption, ButtonClick } from '@/interface/dataTable.interface'
+import ModelDialog from '@/components/model/ModelDialog.vue'
 import { useRoute } from 'vue-router'
 import { useReceiptApi, useItemApi } from '@/composables/api'
-import ModelDialog from '@/components/model/ModelDialog.vue'
-import { ref } from 'vue'
-
-import { reactive } from 'vue'
+import { ref, computed, watch, defineComponent } from 'vue'
 import type { Item } from '@/interface/item.interface'
-import type { Api } from '@/interface/api'
-import type { Receipt, ReceiptDetail } from '@/interface/receipt.interface'
-import { computed } from 'vue'
-import { watch } from 'vue'
-export default {
+import type { Receipt } from '@/interface/receipt.interface'
+import type { IColumn, TableOption, ButtonClick } from '@/interface/dataTable.interface'
+
+export default defineComponent({
   components: { MainPage, DataTable, ModelDialog },
   props: {
     title: {
@@ -152,7 +149,8 @@ export default {
       require: true
     }
   },
-  setup(props, ctx) {
+
+  setup(props) {
     const route = useRoute()
     const receiptId = ref(-1)
     let itemSelectIndex = ref(-1)
@@ -194,8 +192,18 @@ export default {
       },
       { key: 'itemDiscount', label: 'ส่วนลด (บาท)' },
       { key: 'itemAmount', label: 'รวมเงิน' }
-      // { key: '', label: 'ดำเนินการ' }
     ])
+    const receiptData = ref<Receipt>({
+      receiptCode: receiptCode.value,
+      receiptDate: date.value,
+      receiptGrandTotal: 0,
+      receiptTotalDiscount: 0,
+      receiptSubTotal: 0,
+      receiptTotalBeforeDiscount: 0,
+      receiptTradeDiscount: 0,
+      receiptdetails: []
+    })
+
     function formatDateForBackend(dateString: string): string {
       const date = dateString.split('/')
       return `${date[2]}-${date[1]}-${date[0]}`
@@ -206,13 +214,9 @@ export default {
       if (emitData !== null) {
         titleModel.value = 'แก้ไขสินค้า'
         selectItemModel.value = emitData.row
-        console.log(selectItemModel.value)
-
         itemSelectIndex.value = emitData.index
       }
       itemModel.value = (await useItemApi().getItem()).data ?? []
-      console.log(itemModel.value)
-
       openModel.value = true
     }
     async function saveChange() {
@@ -252,16 +256,6 @@ export default {
       const year = date.getFullYear()
       return `${dayNo}/${month}/${year}`
     }
-    const receiptData = ref<Receipt>({
-      receiptCode: receiptCode.value,
-      receiptDate: date.value,
-      receiptGrandTotal: 0,
-      receiptTotalDiscount: 0,
-      receiptSubTotal: 0,
-      receiptTotalBeforeDiscount: 0,
-      receiptTradeDiscount: 0,
-      receiptdetails: []
-    })
 
     if (props.isView) {
       header.value.pop()
@@ -290,7 +284,6 @@ export default {
             e.itemDiscount = (e.itemDiscountPercent / 100) * e.itemAmount
             sumDiscount += e.itemDiscount
             e.itemAmount -= e.itemDiscount
-            // sumDiscount += e.itemDiscount
           })
           receiptData.value.receiptTotalBeforeDiscount = sum
           receiptData.value.receiptTotalDiscount = sumDiscount
@@ -299,7 +292,6 @@ export default {
           receiptData.value.receiptGrandTotal =
             receiptData.value.receiptTotalBeforeDiscount -
             (receiptData.value.receiptTradeDiscount ?? 0)
-          // console.log(oldValue)
         },
         { deep: true }
       )
@@ -317,24 +309,25 @@ export default {
     }
 
     return {
-      date,
-      header,
-      receiptData,
+      removeItemInReceipt,
       openModelFunction,
+      selectItemInModal,
       saveChange,
       receiptDetailsData,
-      option,
+      selectItemModel,
+      receiptCode,
+      receiptData,
       titleModel,
       openModel,
-      selectItemModel,
       itemModel,
-      selectItemInModal,
-      removeItemInReceipt,
-      receiptCode
+      header,
+      option,
+      date
     }
   }
-}
+})
 </script>
+
 <style scoped>
 .select {
   color: rgb(0, 71, 224);

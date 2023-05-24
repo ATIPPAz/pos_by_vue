@@ -4,7 +4,7 @@
       <div class="j-end" style="margin-bottom: 14px">
         <button id="addButton" class="blue" @click="createUnitModalOpen">เพิ่ม</button>
       </div>
-      <DataTable :data="unitNameData" :column="header" :option="option">
+      <DataTable :data="unitData" :column="header" :option="option">
         <template #action="data"
           ><div>
             <button @click="editUnit(data.data)">edit</button>
@@ -31,7 +31,7 @@ import Modal from '@/components/model/ModelDialog.vue'
 import DataTable from '@/components/DataTable/DataTable.vue'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 import type { Unit } from '@/interface/unit.interface'
-// import
+import { useUnitApi } from '@/composables/api/useUnitApi'
 export default defineComponent({
   components: { DataTable, Modal, MainPage },
   setup() {
@@ -40,6 +40,17 @@ export default defineComponent({
     const unitInput = ref('')
     const unitData = ref<Unit[]>([])
     const idSelect = ref(0)
+
+    const header = ref<IColumn[]>([
+      {
+        key: 'unitName',
+        label: 'ชื่อ'
+      }
+    ])
+    const option = ref<TableOption>({
+      actionLabel: 'ดำเนินการ',
+      rowNumber: true
+    })
     function editUnit(data: Unit) {
       unitInput.value = data.unitName
       idSelect.value = data.id ?? -1
@@ -50,16 +61,6 @@ export default defineComponent({
       const index = unitData.value.findIndex((e: Unit) => e.unitId === data.id)
       unitData.value.splice(index, 1)
     }
-
-    const header = ref<IColumn[]>([
-      {
-        key: 'unitName',
-        label: 'ชื่อ'
-      }
-    ])
-    const option = ref<TableOption>({
-      actionLabel: 'ดำเนินการ'
-    })
     function saveFunction() {
       if (title.value === 'เพิ่มสินค้า') {
         saveChange()
@@ -84,7 +85,7 @@ export default defineComponent({
       unitInput.value = ''
     }
     onMounted(async () => {
-      // const res = await $api.getUnit()
+      const res = (await useUnitApi().getUnit()).data!
       if (res.length > 0) {
         unitData.value = res
       } else {
@@ -98,28 +99,18 @@ export default defineComponent({
         ]
       }
     })
-    const filter = ref([
-      { name: 'name', key: 'unitName', type: 'input', value: '', placeHolder: 'enter name' }
-    ])
-    const unitNameData = computed(() => {
-      return unitData.value.map((e: Unit) => {
-        return { unitName: e.unitName, id: e.unitId }
-      })
-    })
     function createUnitModalOpen() {
       open.value = true
       title.value = 'เพิ่มสินค้า'
     }
     return {
       createUnitModalOpen,
-      unitNameData,
       unitData,
       header,
       option,
       editUnit,
       saveFunction,
       deleteUnit,
-      filter,
       unitInput,
       title,
       closeDialog,
@@ -128,5 +119,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style scoped></style>

@@ -1,6 +1,6 @@
 <script lang="ts">
 import Card from '@/components/card/CardMenu.vue'
-import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Manu {
@@ -8,7 +8,7 @@ interface Manu {
   path: string
   label: string
 }
-export default {
+export default defineComponent({
   components: {
     Card
   },
@@ -28,7 +28,7 @@ export default {
       cardClick
     }
   }
-}
+})
 </script>
 
 <template>

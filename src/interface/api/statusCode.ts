@@ -3,5 +3,5 @@ export const statusCode = {
   getSuccess: 200,
   updateSuccess: 200,
   deleteSuccess: 200,
-  createSuccess: 200,
+  createSuccess: 200
 }
