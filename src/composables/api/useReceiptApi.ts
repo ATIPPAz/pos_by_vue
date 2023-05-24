@@ -1,10 +1,20 @@
 import { getRequest, createRequest } from './fetchHelper.js'
-import { type Receipt } from '../../interface/receipt.interface.js'
+import type { Receipt, Prefix } from '../../interface/receipt.interface.js'
 import { endpoint } from './endpoint'
 import { type Api } from '@/interface/api/response.Interface.js'
 const controller = 'receipt'
 
 export function useReceiptApi() {
+  async function getPrefix(): Promise<Api<Prefix | null>> {
+    return await getRequest(`${endpoint}${controller}/getPrefix`)
+      .then((e: any) => {
+        return e.json() as Api<Prefix>
+      })
+      .catch((e: any) => {
+        console.log(e)
+        return { statusCode: 500, data: null }
+      })
+  }
   async function getAllReceipt(start = '', end = ''): Promise<Api<Receipt[] | null>> {
     const queryString = new URLSearchParams({ startDate: start, endDate: end })
     return await getRequest(`${endpoint}${controller}/getAllReceipt?${queryString.toString()}`)
@@ -39,6 +49,7 @@ export function useReceiptApi() {
   return {
     getAllReceipt,
     getOneReceipt,
-    createReceipt
+    createReceipt,
+    getPrefix
   }
 }

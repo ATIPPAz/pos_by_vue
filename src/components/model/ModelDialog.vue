@@ -89,6 +89,19 @@ export default defineComponent({
   border-bottom: 1px solid #c2c2c2;
   padding: 16px;
 }
+
+.model-body {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.model-footer {
+  border-top: 1px solid #c2c2c2;
+  padding: 16px;
+  display: flex;
+  justify-content: end;
+}
 .close {
   color: #aaaaaa;
   top: 10px;
@@ -103,17 +116,6 @@ export default defineComponent({
   text-decoration: none;
   cursor: pointer;
 }
-.model-body {
-  padding: 16px;
-}
-
-.model-footer {
-  border-top: 1px solid #c2c2c2;
-  padding: 16px;
-  display: flex;
-  justify-content: end;
-}
-
 .model-title {
   margin: 0;
 }

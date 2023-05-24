@@ -19,6 +19,7 @@
               <input
                 type="text"
                 :style="col.styleCol.style"
+                :class="col.styleCol.class"
                 v-model="row[col.key]"
                 :disabled="col.styleCol.disabled"
               />
@@ -28,16 +29,18 @@
                 type="number"
                 :style="col.styleCol.style"
                 v-model="row[col.key]"
-                :min="col.styleCol.buttonCustom?.min"
-                :max="col.styleCol.buttonCustom?.max"
+                :class="col.styleCol.class"
+                :min="col.styleCol.inputNumberProps?.min"
+                :max="col.styleCol.inputNumberProps?.max"
                 :disabled="col.styleCol.disabled"
               />
             </div>
             <div v-else-if="col.styleCol && col.styleCol.type === 'button'">
               <button
                 :style="col.styleCol.style"
-                @click="$emit('buttonClick', { row, index })"
+                @click="$emit('buttonClick', { data: row, index })"
                 :disabled="col.styleCol.disabled"
+                :class="col.styleCol.class"
               >
                 {{ row[col.key] }}
               </button>
@@ -47,7 +50,7 @@
             </div>
           </td>
           <td v-if="hasActionSlot">
-            <slot name="action" :data="{ row, index }"></slot>
+            <slot name="action" :data="{ data: row, index }"></slot>
           </td>
         </tr>
         <slot name="specialRow"></slot>

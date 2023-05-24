@@ -2,13 +2,13 @@
 
 #app {
   max-width: 1280px;
-  margin: 0 auto;
+  /* margin: 0 auto; */
   padding: 2rem;
-  font-weight: normal;
+  /* font-weight: normal; */
 }
-body {
+/* body {
   font-size: 16px;
-}
+} */
 /* a,
 .green {
   text-decoration: none;
@@ -93,16 +93,6 @@ body {
   left: 50%;
   margin-top: -50px;
   margin-left: -100px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .card a {

@@ -4,12 +4,13 @@ export interface IColumn {
   styleCol?: {
     style?: string
     type?: string
-    buttonCustom?: ButtonCustom
+    inputNumberProps?: InputNumberProps
     disabled?: boolean
+    class?: string
   }
   size?: string
 }
-interface ButtonCustom {
+interface InputNumberProps {
   min: number
   max: number
 }
@@ -19,6 +20,6 @@ export interface TableOption {
   actionLabel: string
 }
 export interface ButtonClick {
-  row: any
+  data: any
   index: number
 }

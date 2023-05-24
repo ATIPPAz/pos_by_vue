@@ -15,12 +15,12 @@
         @buttonClick="openModelFunction"
       >
         <template #action="data" v-if="!isView">
-          <button @click="removeItemInReceipt(data.data)">ลบ</button>
+          <button @click="removeItemInReceipt(data.data)" class="red">ลบ</button>
         </template>
         <template #specialRow v-if="!isView">
           <tr>
             <td>{{ (receiptDetailsData?.length ?? 0) + 1 }}</td>
-            <td><button @click="openModelFunction()">เลือกสินค้า</button></td>
+            <td><button @click="openModelFunction()" class="blue">เลือกสินค้า</button></td>
             <td></td>
             <td></td>
             <td><input disabled value="0" /></td>
@@ -83,14 +83,9 @@
         </table>
       </div>
       <div style="margin-top: 14px" class="j-end">
-        <button id="savePos" class="blue" v-show="!isView">บันทึก</button>
+        <button @click="saveReceipt" class="blue" v-show="!isView">บันทึก</button>
       </div>
-      <ModelDialog
-        :title="titleModel"
-        @onSave="saveChange"
-        :open="openModel"
-        @onClose="openModel = false"
-      >
+      <ModelDialog :title="titleModel" @onSave="saveChange" :open="openModel" @onClose="closeModel">
         <template #content>
           <ul v-if="itemModel.length > 0">
             <li
@@ -131,7 +126,7 @@ import MainPage from '@/components/mainFrame/MainFrame.vue'
 import DataTable from '@/components/DataTable/DataTable.vue'
 import ModelDialog from '@/components/model/ModelDialog.vue'
 import { useRoute } from 'vue-router'
-import { useReceiptApi, useItemApi } from '@/composables/api'
+import { useReceiptApi, useItemApi, useUnitApi } from '@/composables/api'
 import { ref, computed, watch, defineComponent } from 'vue'
 import type { Item } from '@/interface/item.interface'
 import type { Receipt } from '@/interface/receipt.interface'
@@ -154,8 +149,7 @@ export default defineComponent({
     const route = useRoute()
     const receiptId = ref(-1)
     let itemSelectIndex = ref(-1)
-    const date = ref<string>(formatDateForDisplay(new Date()))
-    const receiptCode = ref<string>('TXXXX')
+    const date = ref<string>()
     const openModel = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
     const titleModel = ref('เลือกสินค้า')
@@ -166,7 +160,8 @@ export default defineComponent({
         key: 'itemCode',
         label: 'รหัสสินค้า',
         styleCol: {
-          type: `${!props.isView ? 'button' : ''}`
+          type: `${!props.isView ? 'button' : ''}`,
+          class: 'gray'
         }
       },
       { key: 'itemName', label: 'ชื่อสินค้า' },
@@ -175,7 +170,12 @@ export default defineComponent({
         key: 'itemQty',
         label: 'จำนวน',
         styleCol: {
-          type: `${!props.isView ? 'input:number' : ''}`
+          type: `${!props.isView ? 'input:number' : ''}`,
+          style: 'width:90%',
+          inputNumberProps: {
+            min: 0,
+            max: 100
+          }
         }
       },
       { key: 'itemPrice', label: 'ราคา' },
@@ -183,8 +183,9 @@ export default defineComponent({
         key: 'itemDiscountPercent',
         label: 'ราคาส่วนลด (%)',
         styleCol: {
+          style: 'width:90%',
           type: `${!props.isView ? 'input:number' : ''}`,
-          buttonCustom: {
+          inputNumberProps: {
             min: 0,
             max: 100
           }
@@ -193,17 +194,24 @@ export default defineComponent({
       { key: 'itemDiscount', label: 'ส่วนลด (บาท)' },
       { key: 'itemAmount', label: 'รวมเงิน' }
     ])
-    const receiptData = ref<Receipt>({
-      receiptCode: receiptCode.value,
-      receiptDate: date.value,
-      receiptGrandTotal: 0,
-      receiptTotalDiscount: 0,
-      receiptSubTotal: 0,
-      receiptTotalBeforeDiscount: 0,
-      receiptTradeDiscount: 0,
-      receiptdetails: []
-    })
-
+    const receiptData = ref<Receipt>({})
+    setDefaultReceipt()
+    async function getPrefix() {
+      return (await useReceiptApi().getPrefix()).data
+    }
+    async function setDefaultReceipt() {
+      const prefix = await getPrefix()
+      receiptData.value = {
+        receiptTradeDiscount: 0,
+        receiptCode: prefix?.prefix_keyName.padEnd(5, 'X'),
+        receiptDate: formatDateForDisplay(new Date()),
+        receiptTotalDiscount: 0,
+        receiptGrandTotal: 0,
+        receiptdetails: [],
+        receiptSubTotal: 0,
+        receiptTotalBeforeDiscount: 0
+      }
+    }
     function formatDateForBackend(dateString: string): string {
       const date = dateString.split('/')
       return `${date[2]}-${date[1]}-${date[0]}`
@@ -213,7 +221,9 @@ export default defineComponent({
       itemSelectIndex.value = -1
       if (emitData !== null) {
         titleModel.value = 'แก้ไขสินค้า'
-        selectItemModel.value = emitData.row
+        console.log(emitData)
+
+        selectItemModel.value = emitData.data
         itemSelectIndex.value = emitData.index
       }
       itemModel.value = (await useItemApi().getItem()).data ?? []
@@ -221,6 +231,7 @@ export default defineComponent({
     }
     async function saveChange() {
       const selectedItem = {
+        unitId: selectItemModel.value?.unitId ?? 0,
         unitName: selectItemModel.value?.unitName ?? '',
         itemId: selectItemModel.value?.itemId ?? 0,
         itemCode: selectItemModel.value?.itemCode ?? '',
@@ -256,16 +267,32 @@ export default defineComponent({
       const year = date.getFullYear()
       return `${dayNo}/${month}/${year}`
     }
-
+    function closeModel() {
+      openModel.value = false
+      selectItemModel.value = null
+    }
+    async function saveReceipt() {
+      if (receiptData.value.receiptDate) {
+        receiptData.value.receiptDate = formatDateForBackend(receiptData.value.receiptDate)
+      }
+      delete receiptData.value.receiptCode
+      const { statusCode } = await useReceiptApi().createReceipt(receiptData.value)
+      if (statusCode) {
+        // some toast
+      }
+      setDefaultReceipt()
+    }
     if (props.isView) {
-      header.value.pop()
       receiptId.value = parseInt(route.params.receiptId.toString())
       ;(async () => {
         const { data } = await useReceiptApi().getOneReceipt(receiptId.value)
+
         receiptData.value = data as Receipt
-        receiptData.value.receiptDate = formatDateForDisplay(
-          new Date(receiptData.value.receiptDate)
-        )
+        if (receiptData.value.receiptDate) {
+          receiptData.value.receiptDate = formatDateForDisplay(
+            new Date(receiptData.value.receiptDate)
+          )
+        }
       })()
     }
     const receiptDetailsData = computed(() => {
@@ -289,9 +316,15 @@ export default defineComponent({
           receiptData.value.receiptTotalDiscount = sumDiscount
           receiptData.value.receiptSubTotal =
             receiptData.value.receiptTotalBeforeDiscount - receiptData.value.receiptTotalDiscount
-          receiptData.value.receiptGrandTotal =
-            receiptData.value.receiptTotalBeforeDiscount -
-            (receiptData.value.receiptTradeDiscount ?? 0)
+          if (
+            receiptData.value.receiptTradeDiscount &&
+            receiptData.value.receiptTradeDiscount > receiptData.value.receiptSubTotal
+          ) {
+            receiptData.value.receiptTradeDiscount = 0
+          } else {
+            receiptData.value.receiptGrandTotal =
+              receiptData.value.receiptSubTotal - (receiptData.value.receiptTradeDiscount ?? 0)
+          }
         },
         { deep: true }
       )
@@ -303,6 +336,7 @@ export default defineComponent({
               (receiptData.value.receiptSubTotal ?? 0) - newValue
           } else {
             receiptData.value.receiptTradeDiscount = 0
+            receiptData.value.receiptGrandTotal = 0
           }
         }
       )
@@ -313,9 +347,10 @@ export default defineComponent({
       openModelFunction,
       selectItemInModal,
       saveChange,
+      saveReceipt,
+      closeModel,
       receiptDetailsData,
       selectItemModel,
-      receiptCode,
       receiptData,
       titleModel,
       openModel,
@@ -331,5 +366,8 @@ export default defineComponent({
 <style scoped>
 .select {
   color: rgb(0, 71, 224);
+}
+li {
+  margin: 8px 0px;
 }
 </style>

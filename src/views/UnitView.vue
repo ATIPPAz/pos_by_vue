@@ -13,23 +13,25 @@
         >
       </DataTable>
 
-      <Modal :open="open" :saveFunction="saveFunction" :title="title" @onClose="closeDialog">
-        <!-- <template #body>
+      <Modal :open="open" @onSave="saveFunction" :title="title" @onClose="closeDialog">
+        <template #content>
           ชื่อหน่วย:<br />
           <input type="text" v-model="unitInput" />
-        </template> -->
+        </template>
       </Modal>
     </template>
   </MainPage>
 </template>
 
 <script lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { defineComponent } from 'vue'
+import { statusCode as status } from '@/interface/api'
 import MainPage from '@/components/mainFrame/MainFrame.vue'
 import Modal from '@/components/model/ModelDialog.vue'
 import DataTable from '@/components/DataTable/DataTable.vue'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { ButtonClick } from '@/interface/dataTable.interface'
 import type { Unit } from '@/interface/unit.interface'
 import { useUnitApi } from '@/composables/api/useUnitApi'
 export default defineComponent({
@@ -39,7 +41,7 @@ export default defineComponent({
     const title = ref('')
     const unitInput = ref('')
     const unitData = ref<Unit[]>([])
-    const idSelect = ref(0)
+    const idSelect = ref<number>(0)
 
     const header = ref<IColumn[]>([
       {
@@ -51,53 +53,61 @@ export default defineComponent({
       actionLabel: 'ดำเนินการ',
       rowNumber: true
     })
-    function editUnit(data: Unit) {
-      unitInput.value = data.unitName
-      idSelect.value = data.id ?? -1
+    function editUnit(data: ButtonClick) {
+      unitInput.value = data.data.unitName
+      idSelect.value = data.data.unitId ?? -1
       title.value = 'แก้ไขหน่วย'
       open.value = true
     }
-    function deleteUnit(data: Unit) {
-      const index = unitData.value.findIndex((e: Unit) => e.unitId === data.id)
-      unitData.value.splice(index, 1)
-    }
-    function saveFunction() {
-      if (title.value === 'เพิ่มสินค้า') {
-        saveChange()
-      } else {
-        updateChange()
+    async function deleteUnit(data: ButtonClick) {
+      const { statusCode } = await useUnitApi().deleteUnit(data.data.unitId)
+      if (statusCode === status.deleteSuccess) {
+        //some toast
       }
+      // const index = unitData.value.findIndex((e: Unit) => e.unitId === data.id)
+      // unitData.value.splice(index, 1)
+      await getUnit()
+    }
+    async function saveFunction() {
+      if (title.value === 'เพิ่มสินค้า') {
+        await saveChange()
+      } else {
+        await updateChange()
+      }
+      await getUnit()
     }
     function closeDialog() {
       open.value = false
       unitInput.value = ''
     }
-    function saveChange() {
-      unitData.value.push({ unitName: unitInput.value, unitId: unitData.value.length })
-      open.value = false
-
-      unitInput.value = ''
-    }
-    function updateChange() {
-      const index = unitData.value.findIndex((e: Unit) => e.unitId === idSelect.value)
-      unitData.value[index].unitName = unitInput.value
-      open.value = false
-      unitInput.value = ''
-    }
-    onMounted(async () => {
-      const res = (await useUnitApi().getUnit()).data!
-      if (res.length > 0) {
-        unitData.value = res
-      } else {
-        unitData.value = [
-          { unitId: 1, unitName: '9089' },
-          { unitId: 3, unitName: 'm,.m,' },
-          { unitId: 4, unitName: 'l;wqeqwe' },
-          { unitId: 5, unitName: 'hjkhj' },
-          { unitId: 1, unitName: 'asd' },
-          { unitId: 3, unitName: 'hgjgj' }
-        ]
+    async function saveChange() {
+      const { statusCode } = await useUnitApi().createUnit({ unitName: unitInput.value })
+      if (statusCode === status.createSuccess) {
+        // some toast
       }
+      // unitData.value.push({ unitName: unitInput.value, unitId: unitData.value.length })
+      open.value = false
+      unitInput.value = ''
+    }
+    async function updateChange() {
+      const { statusCode } = await useUnitApi().updateUnit({
+        unitId: idSelect.value,
+        unitName: unitInput.value
+      })
+      if (statusCode === status.updateSuccess) {
+        // some toast
+      }
+      // const index = unitData.value.findIndex((e: Unit) => e.unitId === idSelect.value)
+      // unitData.value[index].unitName = unitInput.value
+      open.value = false
+      unitInput.value = ''
+    }
+    async function getUnit() {
+      const res = (await useUnitApi().getUnit()).data!
+      unitData.value = res
+    }
+    onMounted(() => {
+      getUnit()
     })
     function createUnitModalOpen() {
       open.value = true

@@ -25,7 +25,7 @@ import { useReceiptApi } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
 import { ref, defineComponent, computed, onMounted } from 'vue'
 import type { Receipt } from '@/interface/receipt.interface'
-import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { ButtonClick, IColumn, TableOption } from '@/interface/dataTable.interface'
 export default defineComponent({
   components: {
     MainPage,
@@ -37,8 +37,7 @@ export default defineComponent({
     const header = ref<IColumn[]>([
       {
         key: 'receiptCode',
-        label: 'เลขที่อ้างอิง',
-        styleCol: { type: 'button', disabled: true }
+        label: 'เลขที่อ้างอิง'
       },
       { key: 'receiptDate', label: 'วันที่' },
       { key: 'receiptGrandTotal', label: 'GrandTotal' }
@@ -46,22 +45,22 @@ export default defineComponent({
     const option = ref<TableOption>({
       actionLabel: 'ดำเนินการ'
     })
+    const receiptData = computed(() => _receipt.value)
+    let _receipt = ref<Receipt[]>([])
     async function searchReceipt() {
-      console.log(await getReceipt())
+      await getReceipt()
     }
     function getPreviousDay(date = new Date()) {
       const previous = new Date(date.getTime())
       previous.setDate(date.getDate() - 1)
       return previous
     }
-
     function formatDateForDisplay(date: Date) {
       const dayNo = (date.getDate() + '').padStart(2, '0')
       const month = (date.getMonth() + 1).toString().padStart(2, '0')
       const year = date.getFullYear()
       return `${year}-${month}-${dayNo}`
     }
-    let _receipt = ref<Receipt[]>([])
     async function getReceipt() {
       const res = await useReceiptApi().getAllReceipt(startDate.value, endDate.value)
       if (res.statusCode === status.getSuccess) {
@@ -72,11 +71,9 @@ export default defineComponent({
         return []
       }
     }
-    function openDetail(data: Receipt) {
-      router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
+    function openDetail(data: ButtonClick) {
+      router.push({ name: 'receiptDetail', params: { receiptId: data.data.receiptId } })
     }
-    const receiptData = computed(() => _receipt.value)
-
     onMounted(async () => {
       await getReceipt()
     })
