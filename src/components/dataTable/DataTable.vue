@@ -8,10 +8,10 @@
           <th :style="col.size ? `width:${col.size}` : ''" v-for="col in column" :key="col.key">
             {{ col.label }}
           </th>
-          <th v-if="hasAction">{{ option.actionLabel }}</th>
+          <th v-if="hasActionSlot">{{ option.actionLabel }}</th>
         </tr>
       </thead>
-      <tbody v-if="dataTable.length > 0">
+      <tbody>
         <tr v-for="(row, index) in dataTable" :key="index">
           <td>{{ index + 1 }}</td>
           <td v-for="col in column" :key="col.key">
@@ -23,48 +23,48 @@
                 :disabled="col.styleCol.disabled"
               />
             </div>
+            <div v-else-if="col.styleCol && col.styleCol.type === 'input:number'">
+              <input
+                type="number"
+                :style="col.styleCol.style"
+                v-model="row[col.key]"
+                :min="col.styleCol.buttonCustom?.min"
+                :max="col.styleCol.buttonCustom?.max"
+                :disabled="col.styleCol.disabled"
+              />
+            </div>
+            <div v-else-if="col.styleCol && col.styleCol.type === 'button'">
+              <button
+                :style="col.styleCol.style"
+                @click="$emit('buttonClick', { row, index })"
+                :disabled="col.styleCol.disabled"
+              >
+                {{ row[col.key] }}
+              </button>
+            </div>
             <div v-else>
               {{ row[col.key] }}
             </div>
           </td>
-          <td v-if="hasAction">
-            <slot name="action" :data="row"></slot>
+          <td v-if="hasActionSlot">
+            <slot name="action" :data="{ row, index }"></slot>
           </td>
         </tr>
-        <!-- <tr> -->
         <slot name="specialRow"></slot>
-        <!-- </tr> -->
-      </tbody>
-      <tbody v-else>
-        <tr v-show="!hasSpecialRow">
+        <tr v-show="!hasSpecialRow && dataTable.length <= 0">
           <th :colspan="column?.length ? column.length + 2 : 99">
             <div style="font-size: 48px; font-weight: bold; color: #adadad">No data</div>
           </th>
         </tr>
-        <slot name="specialRow"></slot>
       </tbody>
     </table>
   </div>
 </template>
 
 <script lang="ts">
-import type { Prop } from 'vue'
-import { computed, onMounted, ref, watch, type PropType, defineComponent } from 'vue'
-export interface IColumn {
-  key: string
-  label: string
-  styleCol?: {
-    style?: string
-    type?: string
-    disabled?: boolean
-  }
-  size?: string
-}
-export interface TableOption {
-  pagination?: number
-  rowNumber?: boolean
-  actionLabel: string
-}
+import { computed, onMounted, defineComponent } from 'vue'
+import type { PropType } from 'vue'
+import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 export default defineComponent({
   props: {
     column: {
@@ -95,18 +95,17 @@ export default defineComponent({
     const hasSpecialRow = computed(() => {
       return !!ctx.slots.specialRow
     })
-    const lowerBound = 0
-    const upperBound = 0
-    // watch(()=>,)
+
     onMounted(() => {})
     return {
       hasSpecialRow,
       dataTable,
-      hasAction: hasActionSlot
+      hasActionSlot
     }
   }
 })
 </script>
+
 <style scope>
 table.dataTable {
   border-collapse: collapse;

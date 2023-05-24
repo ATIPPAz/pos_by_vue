@@ -1,11 +1,11 @@
 <template>
-  <PosPage />
+  <ReceiptDetail title="" :is-view="false" />
 </template>
 <script lang="ts">
-import PosPage from '../components/pages/pos/PosPage.vue'
+import ReceiptDetail from '@/components/receipt/receiptManager.vue'
 export default {
   components: {
-    PosPage
+    ReceiptDetail
   },
   setup() {
     return {}
