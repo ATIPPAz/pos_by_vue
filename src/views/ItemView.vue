@@ -88,8 +88,8 @@ export default defineComponent({
   setup() {
     const modalOption = ref<ModalOption>({ style: { width: '400px' } })
     const itemDropdown = ref<Unit[]>([])
-    const loader = inject(loaderPluginSymbol)
-    const toast = inject(toastPluginSymbol)
+    const loader = inject(loaderPluginSymbol)!
+    const toast = inject(toastPluginSymbol)!
     const useUnitApi = apiUnit()
 
     const header = ref<IColumn[]>([
@@ -110,7 +110,7 @@ export default defineComponent({
     const openModal = ref(false)
     const titleModal = ref('เพิ่มสินค้า')
     async function saveChange() {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       let statusCode = 0
       if (titleModal.value === 'เพิ่มสินค้า') {
         statusCode = (await useItemApi().createItem(itemRequest.value)).statusCode
@@ -118,7 +118,9 @@ export default defineComponent({
         statusCode = (await useItemApi().updateItem(itemRequest.value)).statusCode
       }
       if (statusCode === status.createSuccess || statusCode === status.updateSuccess) {
-        toast?.success('สำเร็จ', 'ดำเนินการสำเร็จ')
+        toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
+      } else {
+        toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
       }
       openModal.value = false
       itemRequest.value = {
@@ -129,22 +131,22 @@ export default defineComponent({
         unitName: unitSelect.value?.unitName
       }
       await getItemData()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     }
 
     async function deleteItem(data: any) {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       const { statusCode } = await useItemApi().deleteItem(data.itemId)
-      if (status.deleteSuccess === statusCode) {
-        //
+      if (statusCode === status.deleteSuccess) {
+        toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
       } else {
-        //
+        toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
       }
       await getItemData()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     }
     async function modalOpen(item: any = null) {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       await getUnitData()
       if (item) {
         titleModal.value = 'แก้ไขสินค้า'
@@ -154,7 +156,7 @@ export default defineComponent({
         titleModal.value = 'เพิ่มสินค้า'
         openModal.value = true
       }
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     }
     watch(
       () => unitSelect.value,
@@ -189,9 +191,9 @@ export default defineComponent({
       unitSelect.value = itemDropdown.value[0]
     }
     onMounted(async () => {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       await getItemData()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     })
 
     return {

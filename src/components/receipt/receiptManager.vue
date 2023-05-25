@@ -181,7 +181,8 @@ import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 import { inject } from 'vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { onMounted } from 'vue'
-const a = useReceiptApi()
+import { statusCode as status } from '@/interface/api'
+import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
   components: { DataTable, ModelDialog },
   props: {
@@ -193,6 +194,7 @@ export default defineComponent({
 
   setup(props) {
     const loader = inject(loaderPluginSymbol)
+    const toast = inject(toastPluginSymbol)
     const route = useRoute()
     const receiptId = ref(-1)
     let itemSelectIndex = ref(-1)
@@ -201,7 +203,6 @@ export default defineComponent({
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
     const titleModal = ref('เลือกสินค้า')
     const itemModel = ref<Item[]>([])
-
     const selectItemModel = ref<Item | null>(null)
     const header = ref<IColumn[]>([
       {
@@ -307,8 +308,10 @@ export default defineComponent({
       delete receiptData.value.receiptCode
       loader?.setLoadingOn()
       const { statusCode } = await useReceiptApi().createReceipt(receiptData.value)
-      if (statusCode) {
-        // some toast
+      if (statusCode === status.createSuccess) {
+        toast?.success('สำเร็จ', 'สร้างสินค้ารายการสั่งซื้อสำเร็จ')
+      } else {
+        toast?.error('ไม่สำเร็จ', 'ไม่สามารถสร้างรายการซื้อสินค้าได้')
       }
       await setDefaultReceipt()
       loader?.setLoadingOff()
@@ -319,7 +322,10 @@ export default defineComponent({
       await setDefaultReceipt()
       if (props.isView) {
         receiptId.value = parseInt(route.params.receiptId.toString())
-        const { data } = await useReceiptApi().getOneReceipt(receiptId.value)
+        const { data, statusCode } = await useReceiptApi().getOneReceipt(receiptId.value)
+        if (statusCode === status.error) {
+          toast?.error('เกิดข้อผิดพลาด', 'เซิฟเวอร์มีปัญหา')
+        }
         receiptData.value = data as Receipt
         if (receiptData.value.receiptDate) {
           receiptData.value.receiptDate = formatDateForDisplay(

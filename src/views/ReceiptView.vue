@@ -37,13 +37,15 @@ import { statusCode as status } from '@/interface/api'
 import { ref, defineComponent, computed, onMounted, inject } from 'vue'
 import type { Receipt } from '@/interface/receipt.interface'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
   components: {
     MainFrame,
     DataTable
   },
   setup() {
-    const loader = inject(loaderPluginSymbol)
+    const loader = inject(loaderPluginSymbol)!
+    const toast = inject(toastPluginSymbol)!
     const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
     const endDate = ref(formatDateForDisplay(new Date()))
     const header = ref<IColumn[]>([
@@ -60,9 +62,9 @@ export default defineComponent({
     const receiptData = computed(() => _receipt.value)
     let _receipt = ref<Receipt[]>([])
     async function searchReceipt() {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       await getReceipt()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     }
     function getPreviousDay(date = new Date()) {
       const previous = new Date(date.getTime())
@@ -81,6 +83,7 @@ export default defineComponent({
         _receipt.value = res.data as Receipt[]
         return res.data
       } else {
+        toast.error('ไม่สำเร็จ', 'เซิฟเวอร์มีปัญหา')
         _receipt.value = []
         return []
       }
@@ -89,9 +92,9 @@ export default defineComponent({
       router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
     }
     onMounted(async () => {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       await getReceipt()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     })
     return {
       startDate,

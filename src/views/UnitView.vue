@@ -60,6 +60,7 @@ import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 import type { Unit } from '@/interface/unit.interface'
 import { useUnitApi } from '@/composables/api/useUnitApi'
 import { loaderPluginSymbol } from '@/plugins/loading'
+import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
   components: { DataTable, Modal, MainFrame },
   setup() {
@@ -68,7 +69,8 @@ export default defineComponent({
     const unitInput = ref('')
     const unitData = ref<Unit[]>([])
     const idSelect = ref<number>(0)
-    const loader = inject(loaderPluginSymbol)
+    const loader = inject(loaderPluginSymbol)!
+    const toast = inject(toastPluginSymbol)!
     const header = ref<IColumn[]>([
       {
         key: 'unitName',
@@ -93,18 +95,18 @@ export default defineComponent({
       open.value = true
     }
     async function deleteUnit(data: any) {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       const { statusCode } = await useUnitApi().deleteUnit(data.unitId)
       if (statusCode === status.deleteSuccess) {
-        //some toast
+        toast.success('สำเร็จ', 'ลบหน่วยนับสำเร็จ')
+      } else {
+        toast.error('ไม่สำเร็จ', 'ไม่สามารถลบหน่วยนับได้')
       }
-      // const index = unitData.value.findIndex((e: Unit) => e.unitId === data.id)
-      // unitData.value.splice(index, 1)
       await getUnit()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     }
     async function saveChange() {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       let statusCode = 0
       if (title.value === 'เพิ่มสินค้า') {
         statusCode = (await useUnitApi().createUnit({ unitName: unitInput.value })).statusCode
@@ -117,12 +119,14 @@ export default defineComponent({
         ).statusCode
       }
       if (status.updateSuccess === statusCode || status.createSuccess === statusCode) {
-        //
+        toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
+      } else {
+        toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
       }
       open.value = false
       unitInput.value = ''
       await getUnit()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     }
 
     function closeDialog() {
@@ -135,9 +139,9 @@ export default defineComponent({
       unitData.value = res
     }
     onMounted(async () => {
-      loader?.setLoadingOn()
+      loader.setLoadingOn()
       await getUnit()
-      loader?.setLoadingOff()
+      loader.setLoadingOff()
     })
 
     return {

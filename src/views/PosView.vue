@@ -1,7 +1,6 @@
 <template>
   <MainFrame @click:backBtn="$router.push({ name: 'home' })">
     <template #title> <h1>ดูใบเสร็จรับเงิน</h1> </template>
-
     <template #content>
       <ReceiptDetail :is-view="false" />
     </template>

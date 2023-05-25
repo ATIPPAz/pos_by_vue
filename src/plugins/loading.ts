@@ -1,11 +1,6 @@
 import { type Plugin, type InjectionKey } from 'vue'
 export type PluginInstance = ReturnType<typeof $loader>
 export const loaderPluginSymbol: InjectionKey<PluginInstance> = Symbol('$loader')
-// interface Plugin1 {
-//   increment(): void
-//   getCount(): number
-//   test(): void
-// }
 
 function $loader() {
   const page = document.getElementsByTagName('body')[0]
