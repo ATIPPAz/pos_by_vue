@@ -1,10 +1,21 @@
+<template>
+  <div class="d-flex" style="justify-content: space-around">
+    <div v-for="(menu, index) in menus" :key="index">
+      <Card
+        @click="cardClick(menu)"
+        style="width: 225px; text-align: center; text-decoration: underline"
+      >
+        {{ menu.label }}
+      </Card>
+    </div>
+  </div>
+</template>
 <script lang="ts">
 import Card from '@/components/card/CardMenu.vue'
 import { ref, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 
-interface Manu {
-  id: number
+interface Menu {
   path: string
   label: string
 }
@@ -14,33 +25,19 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter()
-    const manus = ref<Manu[]>([
-      { id: 1, label: 'ตั้งค่าหน่วยนับ', path: '/unit' },
-      { id: 1, label: 'ตั้งค่าไอเทม', path: '/item' },
-      { id: 1, label: 'ดูใบเสร็จรับเงิน', path: '/receipt' },
-      { id: 1, label: 'ออกใบเสร็จรับเงิน', path: '/pos' }
+    const menus = ref<Menu[]>([
+      { label: 'ตั้งค่าหน่วยนับ', path: '/unit' },
+      { label: 'ตั้งค่าไอเทม', path: '/item' },
+      { label: 'ดูใบเสร็จรับเงิน', path: '/receipt' },
+      { label: 'ออกใบเสร็จรับเงิน', path: '/pos' }
     ])
-    function cardClick(manu: Manu) {
-      router.push(manu.path)
+    function cardClick(menu: Menu) {
+      router.push(menu.path)
     }
     return {
-      manus,
+      menus,
       cardClick
     }
   }
 })
 </script>
-
-<template>
-  <div class="d-flex" style="justify-content: space-around">
-    <div v-for="manu in manus" :key="manu.id">
-      <Card
-        @onClick="cardClick"
-        style="width: 225px; text-align: center; text-decoration: underline"
-        :item="manu"
-      >
-        {{ manu.label }}
-      </Card>
-    </div>
-  </div>
-</template>

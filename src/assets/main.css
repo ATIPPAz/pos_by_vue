@@ -15,7 +15,9 @@
   color: hsla(160, 100%, 37%, 1);
   transition: 0.4s;
 } */
-
+.font-bold {
+  font-weight: bold;
+}
 @media (hover: hover) {
   /* a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
@@ -93,6 +95,15 @@
   left: 50%;
   margin-top: -50px;
   margin-left: -100px;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .card a {
@@ -183,6 +194,7 @@ select {
   padding: 4px;
   border: 1px solid rgb(130, 130, 130);
   width: 100%;
+  font-weight: bold;
 }
 input {
   border-radius: 5px;

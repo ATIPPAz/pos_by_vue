@@ -1,9 +1,12 @@
 import './assets/main.css'
-import sample from './plugins/sample'
+import loader from './plugins/loading'
+import toast from './plugins/toast'
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 const app = createApp(App)
 app.use(router)
-app.use(sample)
+app.use(loader)
+app.use(toast)
 app.mount('#app')

@@ -1,37 +1,49 @@
 <template>
-  <MainPage title="ดูใบเสร็จรับเงิน">
+  <MainFrame @click:backBtn="$router.push({ name: 'home' })">
+    <template #title> <h1>ดูใบเสร็จรับเงิน</h1> </template>
     <template #content>
       <div style="margin-bottom: 14px">
         <label for="startDate">วันที่เริ่มต้น:</label>
-        <input type="date" v-model="startDate" />
+        <input type="date" v-model="startDate" style="margin: 0px 8px" />
         <label for="endDate"> วันสิ้นสุด:</label>
-        <input type="date" v-model="endDate" />
+        <input type="date" v-model="endDate" style="margin: 0px 8px" />
         <button id="searchButton" @click="searchReceipt" class="blue">ค้นหา</button>
       </div>
       <DataTable :column="header" :data="receiptData" :option="option">
-        <template #action="data">
-          <button @click="openDetail(data.data)" class="blue">ดูรายละเอียด</button>
+        <template #cell-receiptCode="{ data }">
+          {{ data.receiptCode }}
+        </template>
+        <template #cell-receiptDate="{ data }">
+          {{ data.receiptDate }}
+        </template>
+        <template #cell-receiptGrandTotal="{ data }">
+          {{ data.receiptGrandTotal }}
+        </template>
+        <template #cell-idRowAction="{ data }">
+          <button @click="openDetail(data)" class="blue">ดูรายละเอียด</button>
         </template>
       </DataTable>
     </template>
-  </MainPage>
+  </MainFrame>
 </template>
 
 <script lang="ts">
 import router from '@/router'
-import MainPage from '@/components/mainFrame/MainFrame.vue'
-import DataTable from '@/components/DataTable/DataTable.vue'
+import MainFrame from '@/components/mainFrame/MainFrame.vue'
+import DataTable from '@/components/dataTable/DataTable.vue'
+import { loaderPluginSymbol } from '@/plugins/loading'
 import { useReceiptApi } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
-import { ref, defineComponent, computed, onMounted } from 'vue'
+import { ref, defineComponent, computed, onMounted, inject } from 'vue'
 import type { Receipt } from '@/interface/receipt.interface'
-import type { ButtonClick, IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 export default defineComponent({
   components: {
-    MainPage,
+    MainFrame,
     DataTable
   },
   setup() {
+    const loader = inject(loaderPluginSymbol)
     const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
     const endDate = ref(formatDateForDisplay(new Date()))
     const header = ref<IColumn[]>([
@@ -48,7 +60,9 @@ export default defineComponent({
     const receiptData = computed(() => _receipt.value)
     let _receipt = ref<Receipt[]>([])
     async function searchReceipt() {
+      loader?.setLoadingOn()
       await getReceipt()
+      loader?.setLoadingOff()
     }
     function getPreviousDay(date = new Date()) {
       const previous = new Date(date.getTime())
@@ -71,11 +85,13 @@ export default defineComponent({
         return []
       }
     }
-    function openDetail(data: ButtonClick) {
-      router.push({ name: 'receiptDetail', params: { receiptId: data.data.receiptId } })
+    function openDetail(data: any) {
+      router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
     }
     onMounted(async () => {
+      loader?.setLoadingOn()
       await getReceipt()
+      loader?.setLoadingOff()
     })
     return {
       startDate,

@@ -1,144 +1,190 @@
 <template>
-  <MainPage :title="title">
-    <template #content>
-      <div style="margin-bottom: 14px">
-        <label for="receiptCode">เลขที่เอกสาร:</label> <br />
-        <input type="text" name="" id="receiptCode" disabled :value="receiptData.receiptCode" />
-        <br />
-        <label for="">วันที่</label> <br />
-        <input type="text" name="" id="dateNow" disabled :value="receiptData.receiptDate" />
-      </div>
-      <DataTable
-        :column="header"
-        :data="receiptDetailsData"
-        :option="option"
-        @buttonClick="openModelFunction"
-      >
-        <template #action="data" v-if="!isView">
-          <button @click="removeItemInReceipt(data.data)" class="red">ลบ</button>
+  <main>
+    <div style="margin-bottom: 14px">
+      <label for="receiptCode">เลขที่เอกสาร:</label> <br />
+      <input type="text" name="" id="receiptCode" disabled :value="receiptData.receiptCode" />
+      <br />
+      <label for="">วันที่</label> <br />
+      <input type="text" name="" id="dateNow" disabled :value="receiptData.receiptDate" />
+    </div>
+    <DataTable :column="header" :data="receiptDetailsData" :option="option">
+      <template #cell-itemCode="data">
+        <button v-if="!isView" class="gray" @click="openModal(data)">
+          {{ data.data.itemCode }}
+        </button>
+        <template v-else>
+          {{ data.data.itemCode }}
         </template>
-        <template #specialRow v-if="!isView">
+      </template>
+      <template #cell-itemName="{ data }">
+        {{ data.itemName }}
+      </template>
+      <template #cell-unitName="{ data }">
+        {{ data.unitName }}
+      </template>
+      <template #cell-itemQty="{ data }">
+        <input v-if="!isView" :disabled="isView" type="number" min="0" v-model="data.itemQty" />
+        <template v-else>{{ data.itemQty }}</template>
+      </template>
+      <template #cell-itemPrice="{ data }">
+        {{ data.itemPrice }}
+      </template>
+      <template #cell-itemDiscountPercent="{ data }">
+        <input
+          v-if="!isView"
+          :disabled="isView"
+          type="number"
+          min="0"
+          max="100"
+          style="width: 95%"
+          v-model="data.itemDiscountPercent"
+        />
+        <template v-else>
+          {{ data.itemDiscountPercent }}
+        </template>
+      </template>
+      <template #cell-itemDiscount="{ data }">
+        <input
+          v-if="!isView"
+          :disabled="isView"
+          type="number"
+          min="0"
+          v-model="data.itemDiscount"
+        />
+        <template v-else>
+          {{ data.itemDiscount }}
+        </template>
+      </template>
+      <template #cell-itemAmount="{ data }">
+        {{ data.itemAmount }}
+      </template>
+
+      <template #cell-idRowAction="data" v-if="!isView">
+        <button @click="removeItemInReceipt(data)" class="red">ลบ</button>
+      </template>
+      <template #specialRow v-if="!isView">
+        <tr>
+          <td>{{ (receiptDetailsData?.length ?? 0) + 1 }}</td>
+          <td><button @click="openModal()" class="blue">เลือกสินค้า</button></td>
+          <td></td>
+          <td></td>
+          <td><input disabled value="0" /></td>
+          <td>0</td>
+          <td><input disabled value="0" /></td>
+          <td><input disabled value="0" /></td>
+          <td>0</td>
+          <td><button disabled>ลบ</button></td>
+        </tr>
+      </template>
+    </DataTable>
+    <div class="j-end" style="margin-top: 14px">
+      <table style="width: fit-content">
+        <tbody>
           <tr>
-            <td>{{ (receiptDetailsData?.length ?? 0) + 1 }}</td>
-            <td><button @click="openModelFunction()" class="blue">เลือกสินค้า</button></td>
-            <td></td>
-            <td></td>
-            <td><input disabled value="0" /></td>
-            <td>0</td>
-            <td><input disabled value="0" /></td>
-            <td><input disabled value="0" /></td>
-            <td>0</td>
-            <td><button disabled>ลบ</button></td>
+            <td class="t-start">ยอดรวมสินค้าก่อนลด</td>
+            <td>
+              <input type="number" :value="receiptData.receiptTotalBeforeDiscount" disabled /><br />
+            </td>
           </tr>
-        </template>
-      </DataTable>
-      <div class="j-end" style="margin-top: 14px">
-        <table style="width: fit-content">
-          <caption></caption>
-          <tbody>
-            <tr>
-              <td class="t-start">ยอดรวมสินค้าก่อนลด</td>
-              <td>
-                <input
-                  type="number"
-                  :value="receiptData.receiptTotalBeforeDiscount"
-                  disabled
-                /><br />
-              </td>
-            </tr>
-            <tr>
-              <td class="t-start">ยอดรวมส่วนลดสินค้า</td>
-              <td>
-                <input type="number" :value="receiptData.receiptTotalDiscount" disabled /><br />
-              </td>
-            </tr>
-            <tr>
-              <td class="t-start">Subtotal</td>
-              <td><input type="number" :value="receiptData.receiptSubTotal" disabled /><br /></td>
-            </tr>
-            <tr>
-              <td class="t-start">ส่วนลดการค้า</td>
-              <td>
-                <input
-                  type="number"
-                  :disabled="isView"
-                  v-model="receiptData.receiptTradeDiscount"
-                  min="0"
-                /><br />
-              </td>
-            </tr>
-            <tr>
-              <td class="t-start">Grand total</td>
-              <td>
-                <input
-                  type="number"
-                  name=""
-                  id="grandTotal"
-                  :value="receiptData.receiptGrandTotal"
-                  disabled
-                /><br />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="margin-top: 14px" class="j-end">
-        <button @click="saveReceipt" class="blue" v-show="!isView">บันทึก</button>
-      </div>
-      <ModelDialog :title="titleModel" @onSave="saveChange" :open="openModel" @onClose="closeModel">
-        <template #content>
-          <ul v-if="itemModel.length > 0">
+          <tr>
+            <td class="t-start">ยอดรวมส่วนลดสินค้า</td>
+            <td>
+              <input type="number" :value="receiptData.receiptTotalDiscount" disabled /><br />
+            </td>
+          </tr>
+          <tr>
+            <td class="t-start">Subtotal</td>
+            <td><input type="number" :value="receiptData.receiptSubTotal" disabled /><br /></td>
+          </tr>
+          <tr>
+            <td class="t-start">ส่วนลดการค้า</td>
+            <td>
+              <input
+                type="number"
+                :disabled="isView"
+                v-model="receiptData.receiptTradeDiscount"
+                min="0"
+              /><br />
+            </td>
+          </tr>
+          <tr>
+            <td class="t-start">Grand total</td>
+            <td>
+              <input
+                type="number"
+                name=""
+                id="grandTotal"
+                :value="receiptData.receiptGrandTotal"
+                disabled
+              /><br />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top: 14px" class="j-end">
+      <button @click="saveReceipt" class="blue" v-show="!isView">บันทึก</button>
+    </div>
+    <ModelDialog :open="modalOpen">
+      <template #header>
+        <span class="close" @click="closeModel"> &times; </span>
+        <p class="modal-title">{{ titleModal }}</p>
+      </template>
+      <template #body>
+        <div v-if="itemModel.length > 0" style="max-height: 150px; overflow-y: auto">
+          <ul>
             <li
               v-for="item in itemModel"
               :key="item.itemId"
               style="cursor: pointer"
               @click="selectItemInModal(item)"
-              :class="selectItemModel && selectItemModel.itemId === item.itemId ? 'select' : ''"
+              :class="
+                selectItemModel && selectItemModel.itemId === item.itemId ? 'select font-bold' : ''
+              "
             >
               {{ item.itemName }}
             </li>
           </ul>
-          <div v-else>Nodata</div>
-          <hr />
-          <div v-if="selectItemModel !== null">
-            <h1>item detail</h1>
-            <p>รหัสสินค้า</p>
-            <br />
-            {{ selectItemModel.itemCode }}
-            <br />
-            <p>ชื่อสินค้า</p>
-            <br />
-            <p>{{ selectItemModel.itemName }}</p>
-            <br />
-            <p>ราคา</p>
-            <br />
-            <p>{{ selectItemModel.itemPrice }}</p>
-          </div>
-          <div v-else>No Item Selected</div>
-        </template>
-      </ModelDialog>
-    </template>
-  </MainPage>
+        </div>
+        <div v-else>Nodata</div>
+        <hr />
+        <div style="padding: 0px 16px" v-if="selectItemModel !== null">
+          <h1>item detail</h1>
+          <p class="font-bold">รหัสสินค้า</p>
+          <p>{{ selectItemModel.itemCode }}</p>
+          <br />
+          <p class="font-bold">ชื่อสินค้า</p>
+          <p>{{ selectItemModel.itemName }}</p>
+          <br />
+          <p class="font-bold">ราคา</p>
+          <p>{{ selectItemModel.itemPrice }}</p>
+        </div>
+        <div v-else>No Item Selected</div>
+      </template>
+      <template #footer>
+        <button @click="closeModel" class="gray" style="margin-right: 8px">close</button>
+        <button @click="saveChange" class="blue">Select this item</button>
+      </template>
+    </ModelDialog>
+  </main>
 </template>
 
 <script lang="ts">
-import MainPage from '@/components/mainFrame/MainFrame.vue'
-import DataTable from '@/components/DataTable/DataTable.vue'
-import ModelDialog from '@/components/model/ModelDialog.vue'
+import DataTable from '@/components/dataTable/DataTable.vue'
+import ModelDialog from '@/components/modal/ModalDialog.vue'
 import { useRoute } from 'vue-router'
-import { useReceiptApi, useItemApi, useUnitApi } from '@/composables/api'
+import { useReceiptApi, useItemApi } from '@/composables/api'
 import { ref, computed, watch, defineComponent } from 'vue'
 import type { Item } from '@/interface/item.interface'
 import type { Receipt } from '@/interface/receipt.interface'
-import type { IColumn, TableOption, ButtonClick } from '@/interface/dataTable.interface'
-
+import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import { inject } from 'vue'
+import { loaderPluginSymbol } from '@/plugins/loading'
+import { onMounted } from 'vue'
+const a = useReceiptApi()
 export default defineComponent({
-  components: { MainPage, DataTable, ModelDialog },
+  components: { DataTable, ModelDialog },
   props: {
-    title: {
-      type: String,
-      require: true
-    },
     isView: {
       type: Boolean,
       require: true
@@ -146,56 +192,39 @@ export default defineComponent({
   },
 
   setup(props) {
+    const loader = inject(loaderPluginSymbol)
     const route = useRoute()
     const receiptId = ref(-1)
     let itemSelectIndex = ref(-1)
     const date = ref<string>()
-    const openModel = ref(false)
+    const modalOpen = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
-    const titleModel = ref('เลือกสินค้า')
+    const titleModal = ref('เลือกสินค้า')
     const itemModel = ref<Item[]>([])
+
     const selectItemModel = ref<Item | null>(null)
     const header = ref<IColumn[]>([
       {
         key: 'itemCode',
-        label: 'รหัสสินค้า',
-        styleCol: {
-          type: `${!props.isView ? 'button' : ''}`,
-          class: 'gray'
-        }
+        label: 'รหัสสินค้า'
       },
       { key: 'itemName', label: 'ชื่อสินค้า' },
       { key: 'unitName', label: 'หน่วย' },
       {
         key: 'itemQty',
-        label: 'จำนวน',
-        styleCol: {
-          type: `${!props.isView ? 'input:number' : ''}`,
-          style: 'width:90%',
-          inputNumberProps: {
-            min: 0,
-            max: 100
-          }
-        }
+        label: 'จำนวน'
       },
       { key: 'itemPrice', label: 'ราคา' },
       {
         key: 'itemDiscountPercent',
-        label: 'ราคาส่วนลด (%)',
-        styleCol: {
-          style: 'width:90%',
-          type: `${!props.isView ? 'input:number' : ''}`,
-          inputNumberProps: {
-            min: 0,
-            max: 100
-          }
-        }
+        label: 'ราคาส่วนลด (%)'
       },
       { key: 'itemDiscount', label: 'ส่วนลด (บาท)' },
       { key: 'itemAmount', label: 'รวมเงิน' }
     ])
-    const receiptData = ref<Receipt>({})
-    setDefaultReceipt()
+    const receiptData = ref<Receipt>({
+      receiptdetails: []
+    })
     async function getPrefix() {
       return (await useReceiptApi().getPrefix()).data
     }
@@ -216,20 +245,20 @@ export default defineComponent({
       const date = dateString.split('/')
       return `${date[2]}-${date[1]}-${date[0]}`
     }
-    async function openModelFunction(emitData: ButtonClick | null = null) {
-      titleModel.value = 'เพิ่มสินค้า'
+    async function openModal(emitData: any = null) {
+      loader?.setLoadingOn()
+      titleModal.value = 'เพิ่มสินค้า'
       itemSelectIndex.value = -1
       if (emitData !== null) {
-        titleModel.value = 'แก้ไขสินค้า'
-        console.log(emitData)
-
+        titleModal.value = 'แก้ไขสินค้า'
         selectItemModel.value = emitData.data
         itemSelectIndex.value = emitData.index
       }
       itemModel.value = (await useItemApi().getItem()).data ?? []
-      openModel.value = true
+      modalOpen.value = true
+      loader?.setLoadingOff()
     }
-    async function saveChange() {
+    function saveChange() {
       const selectedItem = {
         unitId: selectItemModel.value?.unitId ?? 0,
         unitName: selectItemModel.value?.unitName ?? '',
@@ -247,7 +276,7 @@ export default defineComponent({
       } else {
         receiptData.value.receiptdetails?.push(selectedItem)
       }
-      openModel.value = false
+      modalOpen.value = false
       selectItemModel.value = null
     }
 
@@ -268,7 +297,7 @@ export default defineComponent({
       return `${dayNo}/${month}/${year}`
     }
     function closeModel() {
-      openModel.value = false
+      modalOpen.value = false
       selectItemModel.value = null
     }
     async function saveReceipt() {
@@ -276,25 +305,32 @@ export default defineComponent({
         receiptData.value.receiptDate = formatDateForBackend(receiptData.value.receiptDate)
       }
       delete receiptData.value.receiptCode
+      loader?.setLoadingOn()
       const { statusCode } = await useReceiptApi().createReceipt(receiptData.value)
       if (statusCode) {
         // some toast
       }
-      setDefaultReceipt()
+      await setDefaultReceipt()
+      loader?.setLoadingOff()
     }
-    if (props.isView) {
-      receiptId.value = parseInt(route.params.receiptId.toString())
-      ;(async () => {
-        const { data } = await useReceiptApi().getOneReceipt(receiptId.value)
 
+    onMounted(async () => {
+      loader?.setLoadingOn()
+      await setDefaultReceipt()
+      if (props.isView) {
+        receiptId.value = parseInt(route.params.receiptId.toString())
+        const { data } = await useReceiptApi().getOneReceipt(receiptId.value)
         receiptData.value = data as Receipt
         if (receiptData.value.receiptDate) {
           receiptData.value.receiptDate = formatDateForDisplay(
             new Date(receiptData.value.receiptDate)
           )
         }
-      })()
-    }
+      }
+      loader?.setLoadingOff()
+    })
+    ;(async () => {})()
+
     const receiptDetailsData = computed(() => {
       return receiptData.value.receiptdetails
     })
@@ -344,7 +380,7 @@ export default defineComponent({
 
     return {
       removeItemInReceipt,
-      openModelFunction,
+      openModal,
       selectItemInModal,
       saveChange,
       saveReceipt,
@@ -352,8 +388,8 @@ export default defineComponent({
       receiptDetailsData,
       selectItemModel,
       receiptData,
-      titleModel,
-      openModel,
+      titleModal,
+      modalOpen,
       itemModel,
       header,
       option,

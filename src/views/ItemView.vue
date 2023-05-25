@@ -1,62 +1,97 @@
 <template>
-  <MainPage title="ตั้งค่าสินค้า">
+  <MainFrame @click:backBtn="$router.push({ name: 'home' })">
+    <template #title> <h1>ตั้งค่าสินค้า</h1></template>
     <template #content>
       <div class="j-end" style="margin-bottom: 14px">
-        <button class="blue" @click="createItemModalOpen">เพิ่ม</button>
+        <button class="blue" @click="modalOpen()">เพิ่ม</button>
       </div>
       <DataTable :column="header" :option="option" :data="itemData">
-        <template #action="data">
+        <template #cell-itemCode="data">{{ data.data.itemCode }} </template>
+        <template #cell-itemName="data">{{ data.data.itemName }} </template>
+        <template #cell-unitName="data">{{ data.data.unitName }} </template>
+        <template #cell-itemPrice="data">{{ data.data.itemPrice }} </template>
+        <template #cell-idRowAction="data">
           <div>
-            <button @click="editItem(data.data)">edit</button>
-            <button @click="deleteItem(data.data)">delete</button>
+            <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">
+              edit
+            </button>
+            <button @click="deleteItem(data.data)" class="red">delete</button>
           </div>
         </template>
       </DataTable>
-      <Modal
-        :open="openModel"
-        :title="titleModel"
-        @on-save="saveChangeModel"
-        @on-close="closeDialog"
-        ><template #content>
+      <Modal :open="openModal" :option="modalOption">
+        <template #header>
+          <span class="close" @click="closeDialog"> &times; </span>
+          <p class="modal-title">{{ titleModal }}</p>
+        </template>
+        <template #body>
           <div class="item-grid">
             <div class="item">
               รหัสสินค้า: <br />
-              <input type="text" id="itemCode" />
+              <input type="text" v-model="itemRequest.itemCode" />
             </div>
             <div class="item">
               ชื่อสินค้า: <br />
-              <input type="text" id="itemName" />
+              <input type="text" v-model="itemRequest.itemName" />
             </div>
             <div class="item">
               ราคา: <br />
-
-              <input type="number" id="itemPrice" min="0" step="1" value="0" />
+              <input type="number" v-model="itemRequest.itemPrice" min="0" step="1" />
             </div>
             <div class="item">
               หน่วย: <br />
-              <select name="itemDropdown" id="itemDropdown"></select>
-            </div></div></template
-      ></Modal>
+              <select v-model="unitSelect">
+                <option
+                  v-for="unit in itemDropdown"
+                  :value="{ unitId: unit.unitId, unitName: unit.unitName }"
+                  :key="unit.unitId"
+                >
+                  {{ unit.unitName }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </template>
+        <template #footer>
+          <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
+          <button @click="saveChange" class="blue">save change</button>
+        </template>
+      </Modal>
     </template>
-  </MainPage>
+  </MainFrame>
 </template>
 
 <script lang="ts">
-import MainPage from '@/components/mainFrame/MainFrame.vue'
-import { ref, defineComponent } from 'vue'
-import Modal from '@/components/model/ModelDialog.vue'
+import MainFrame from '@/components/mainFrame/MainFrame.vue'
+import { ref, defineComponent, onMounted, inject, watch } from 'vue'
+import Modal from '@/components/modal/ModalDialog.vue'
 
-import { useItemApi } from '@/composables/api/useItemApi'
+import { useItemApi, useUnitApi as apiUnit } from '@/composables/api'
+import { statusCode as status } from '@/interface/api'
+
 import type { Item } from '@/interface/item.interface'
-import DataTable from '@/components/DataTable/DataTable.vue'
+import DataTable from '@/components/dataTable/DataTable.vue'
+import type { ModalOption } from '@/interface/modal.interface'
+
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { Unit } from '@/interface/unit.interface'
+
+import { loaderPluginSymbol } from '@/plugins/loading'
+import { toastPluginSymbol } from '@/plugins/toast'
+
 export default defineComponent({
   components: {
-    MainPage,
+    MainFrame,
     DataTable,
     Modal
   },
   setup() {
+    const modalOption = ref<ModalOption>({ style: { width: '400px' } })
+    const itemDropdown = ref<Unit[]>([])
+    const loader = inject(loaderPluginSymbol)
+    const toast = inject(toastPluginSymbol)
+    const useUnitApi = apiUnit()
+
     const header = ref<IColumn[]>([
       {
         key: 'itemCode',
@@ -70,26 +105,109 @@ export default defineComponent({
     const option = ref<TableOption>({
       actionLabel: 'ดำเนินการ'
     })
-    const openModel = ref(false)
-    const titleModel = ref('เพิ่มสินค้า')
-    function saveChangeModel() {}
-    function createItemModalOpen() {
-      titleModel.value = 'เพิ่มสินค้า'
-      openModel.value = true
+    const itemRequest = ref<Item>({ itemPrice: 0, itemCode: '', itemName: '' })
+    const unitSelect = ref<Unit>({})
+    const openModal = ref(false)
+    const titleModal = ref('เพิ่มสินค้า')
+    async function saveChange() {
+      loader?.setLoadingOn()
+      let statusCode = 0
+      if (titleModal.value === 'เพิ่มสินค้า') {
+        statusCode = (await useItemApi().createItem(itemRequest.value)).statusCode
+      } else {
+        statusCode = (await useItemApi().updateItem(itemRequest.value)).statusCode
+      }
+      if (statusCode === status.createSuccess || statusCode === status.updateSuccess) {
+        toast?.success('สำเร็จ', 'ดำเนินการสำเร็จ')
+      }
+      openModal.value = false
+      itemRequest.value = {
+        itemCode: '',
+        itemName: '',
+        itemPrice: 0,
+        unitId: unitSelect.value?.unitId,
+        unitName: unitSelect.value?.unitName
+      }
+      await getItemData()
+      loader?.setLoadingOff()
     }
-    function closeDialog() {}
-    ;(async () => {
+
+    async function deleteItem(data: any) {
+      loader?.setLoadingOn()
+      const { statusCode } = await useItemApi().deleteItem(data.itemId)
+      if (status.deleteSuccess === statusCode) {
+        //
+      } else {
+        //
+      }
+      await getItemData()
+      loader?.setLoadingOff()
+    }
+    async function modalOpen(item: any = null) {
+      loader?.setLoadingOn()
+      await getUnitData()
+      if (item) {
+        titleModal.value = 'แก้ไขสินค้า'
+        openModal.value = true
+        itemRequest.value = item
+      } else {
+        titleModal.value = 'เพิ่มสินค้า'
+        openModal.value = true
+      }
+      loader?.setLoadingOff()
+    }
+    watch(
+      () => unitSelect.value,
+      (newValue) => {
+        itemRequest.value.unitId = newValue?.unitId
+        itemRequest.value.unitName = newValue?.unitName
+      }
+    )
+    watch(
+      () => itemRequest.value,
+      (newValue) => {
+        unitSelect.value.unitId = newValue.unitId ?? 0
+        unitSelect.value.unitName = newValue.unitName ?? ''
+      },
+      { deep: true }
+    )
+    function closeDialog() {
+      openModal.value = false
+      itemRequest.value = {
+        itemCode: '',
+        itemName: '',
+        itemPrice: 0,
+        unitId: unitSelect.value?.unitId,
+        unitName: unitSelect.value?.unitName
+      }
+    }
+    async function getItemData() {
       itemData.value = (await useItemApi().getItem()).data ?? []
-    })()
+    }
+    async function getUnitData() {
+      itemDropdown.value = (await useUnitApi.getUnit()).data ?? []
+      unitSelect.value = itemDropdown.value[0]
+    }
+    onMounted(async () => {
+      loader?.setLoadingOn()
+      await getItemData()
+      loader?.setLoadingOff()
+    })
+
     return {
       header,
       option,
       itemData,
-      openModel,
-      titleModel,
-      saveChangeModel,
-      createItemModalOpen,
-      closeDialog
+      openModal,
+      titleModal,
+      saveChange,
+      deleteItem,
+      modalOpen,
+      closeDialog,
+      itemDropdown,
+      itemRequest,
+      unitSelect,
+      modalOption
     }
   }
 })
@@ -101,5 +219,8 @@ export default defineComponent({
   grid-template-columns: auto auto;
   gap: 10px;
   padding: 10px;
+}
+.modal-content {
+  width: 600px;
 }
 </style>

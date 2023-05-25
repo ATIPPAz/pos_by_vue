@@ -1,13 +1,13 @@
 import { getRequest, createRequest } from './fetchHelper'
-import { endpoint } from './endpoint.js'
+import { endpoint } from './endpoint'
 import type { Item } from '@/interface/item.interface'
 import type { Api } from '@/interface/api'
 const controller = 'item'
 export function useItemApi() {
   async function getItem() {
     return await getRequest(`${endpoint}${controller}/getItems`)
-      .then((e: any) => {
-        return e.json() as Api<Item[]>
+      .then(async (e: any) => {
+        return (await e.json()) as Api<Item[]>
       })
       .catch((e: any) => {
         console.log(e)
@@ -16,8 +16,8 @@ export function useItemApi() {
   }
   async function createItem(data: Item) {
     return await createRequest(`${endpoint}${controller}/createItem`, data)
-      .then((e: any) => {
-        return e.json() as Api
+      .then(async (e: any) => {
+        return (await e.json()) as Api
       })
       .catch((e: any) => {
         console.log(e)
@@ -26,8 +26,8 @@ export function useItemApi() {
   }
   async function updateItem(data: Item) {
     return await createRequest(`${endpoint}${controller}/updateItem`, data)
-      .then((e: any) => {
-        return e.json() as Api
+      .then(async (e: any) => {
+        return (await e.json()) as Api
       })
       .catch((e: any) => {
         console.log(e)
@@ -36,8 +36,8 @@ export function useItemApi() {
   }
   async function deleteItem(itemId: number) {
     return await createRequest(`${endpoint}${controller}/deleteItem`, { itemId })
-      .then((e: any) => {
-        return e.json() as Api
+      .then(async (e: any) => {
+        return (await e.json()) as Api
       })
       .catch((e: any) => {
         console.log(e)

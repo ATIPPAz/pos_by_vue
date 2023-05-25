@@ -1,35 +1,9 @@
 <template>
-  <div class="card" @click="cardClick">
-    <slot></slot>
+  <div class="card">
+    <slot />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import type { PropType } from 'vue'
-
-export default defineComponent({
-  props: {
-    item: {
-      type: Object as PropType<any>,
-      required: true
-    }
-  },
-  emits: {
-    onClick(value: any) {
-      return true
-    }
-  },
-  setup(props, { emit }) {
-    function cardClick() {
-      emit('onClick', props.item)
-    }
-    return {
-      cardClick
-    }
-  }
-})
-</script>
 <style>
 .card {
   border-radius: 8px;

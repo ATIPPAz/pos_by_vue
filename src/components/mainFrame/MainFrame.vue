@@ -1,18 +1,14 @@
 <template>
   <main>
-    <a class="backBtn" @click="$router.go(-1)">กลับ</a>
-    <h1>{{ title }}</h1>
-    <article>
-      <slot name="content"></slot>
-    </article>
+    <a class="backBtn" @click="$emit('click:backBtn')">กลับ</a> <br />
+    <slot name="title" />
+    <slot name="content" />
   </main>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-export default defineComponent({
-  props: { title: { type: String, default: 'title' } }
-})
+export default defineComponent({})
 </script>
 
 <style scope>
