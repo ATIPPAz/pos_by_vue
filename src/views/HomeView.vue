@@ -9,10 +9,13 @@
       </Card>
     </div>
   </div>
+  <Card ref="z" @click="ttt" style="width: 225px; text-align: center; text-decoration: underline">
+    tets
+  </Card>
 </template>
 <script lang="ts">
 import Card from '@/components/card/CardMenu.vue'
-import { ref, defineComponent } from 'vue'
+import { ref, defineComponent, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Menu {
@@ -24,6 +27,16 @@ export default defineComponent({
     Card
   },
   setup() {
+    // const s = getCurrentInstance()
+    const z = ref<any>(null)
+    console.log(z.value)
+
+    function ttt() {
+      const text = prompt('sometext')
+      console.log(z.value)
+
+      z.value.setU(text)
+    }
     const router = useRouter()
     const menus = ref<Menu[]>([
       { label: 'ตั้งค่าหน่วยนับ', path: '/unit' },
@@ -36,7 +49,9 @@ export default defineComponent({
     }
     return {
       menus,
-      cardClick
+      cardClick,
+      z,
+      ttt
     }
   }
 })

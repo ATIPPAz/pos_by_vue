@@ -19,7 +19,7 @@
         <button id="addButton" class="blue" @click="modelOpen(undefined)">เพิ่ม</button>
       </div>
 
-      <DataTable :data="unitData" :column="header" :option="option">
+      <DataTable ref="confirmDialog" @click="t" :data="unitData" :column="header" :option="option">
         <template #cell-unitName="slotProp">{{ slotProp.data.unitName }}</template>
         <template #cell-idRowAction="data">
           <div>
@@ -46,6 +46,7 @@
         </template>
       </Modal>
     </template>
+    <ConfirmModal ref="confirmDialog" @vnode-mounted="t" />
   </MainFrame>
 </template>
 
@@ -54,6 +55,8 @@ import { onMounted, ref, inject, defineComponent } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import MainFrame from '@/components/mainFrame/MainFrame.vue'
 import Modal from '@/components/modal/ModalDialog.vue'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+
 import DataTable from '@/components/dataTable/DataTable.vue'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 
@@ -62,7 +65,7 @@ import { useUnitApi } from '@/composables/api/useUnitApi'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
-  components: { DataTable, Modal, MainFrame },
+  components: { DataTable, Modal, MainFrame, ConfirmModal },
   setup() {
     const open = ref(false)
     const title = ref('')
@@ -71,6 +74,9 @@ export default defineComponent({
     const idSelect = ref<number>(0)
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
+    const confirmDialog = ref<any>(null)
+    console.log(confirmDialog.value)
+
     const header = ref<IColumn[]>([
       {
         key: 'unitName',
@@ -95,16 +101,21 @@ export default defineComponent({
       open.value = true
     }
     async function deleteUnit(data: any) {
-      loader.setLoadingOn()
-      const { statusCode } = await useUnitApi().deleteUnit(data.unitId)
-      if (statusCode === status.deleteSuccess) {
-        toast.success('สำเร็จ', 'ลบหน่วยนับสำเร็จ')
-      } else {
-        toast.error('ไม่สำเร็จ', 'ไม่สามารถลบหน่วยนับได้')
+      console.log(confirmDialog.value)
+
+      if (await confirmDialog.value.openConfirmModal()) {
+        loader.setLoadingOn()
+        const { statusCode } = await useUnitApi().deleteUnit(data.unitId)
+        if (statusCode === status.deleteSuccess) {
+          toast.success('สำเร็จ', 'ลบหน่วยนับสำเร็จ')
+        } else {
+          toast.error('ไม่สำเร็จ', 'ไม่สามารถลบหน่วยนับได้')
+        }
+        await getUnit()
+        loader.setLoadingOff()
       }
-      await getUnit()
-      loader.setLoadingOff()
     }
+
     async function saveChange() {
       loader.setLoadingOn()
       let statusCode = 0
@@ -133,7 +144,9 @@ export default defineComponent({
       open.value = false
       unitInput.value = ''
     }
-
+    function t() {
+      console.log(confirmDialog.value)
+    }
     async function getUnit() {
       const res = (await useUnitApi().getUnit()).data!
       unitData.value = res
@@ -154,7 +167,9 @@ export default defineComponent({
       unitInput,
       title,
       closeDialog,
-      open
+      open,
+      confirmDialog,
+      t
     }
   }
 })

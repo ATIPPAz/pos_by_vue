@@ -1,9 +1,25 @@
 <template>
   <div class="card">
+    {{ uuuu }}
     <slot />
   </div>
 </template>
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
 
+export default defineComponent({
+  setup() {
+    const uuuu = ref('aaaa')
+    function setU(value: string) {
+      uuuu.value = value
+    }
+    return {
+      uuuu,
+      setU
+    }
+  }
+})
+</script>
 <style>
 .card {
   border-radius: 8px;
