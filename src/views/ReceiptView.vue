@@ -38,6 +38,7 @@ import { ref, defineComponent, computed, onMounted, inject } from 'vue'
 import type { Receipt } from '@/interface/receipt.interface'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 import { toastPluginSymbol } from '@/plugins/toast'
+
 export default defineComponent({
   components: {
     MainFrame,

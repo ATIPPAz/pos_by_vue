@@ -57,6 +57,7 @@
           <button @click="saveChange" class="blue">save change</button>
         </template>
       </Modal>
+      <ConfirmModal ref="confirmDialog" :open="openConfirm" />
     </template>
   </MainFrame>
 </template>
@@ -75,6 +76,7 @@ import type { ModalOption } from '@/interface/modal.interface'
 
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
 import type { Unit } from '@/interface/unit.interface'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
@@ -83,15 +85,17 @@ export default defineComponent({
   components: {
     MainFrame,
     DataTable,
+    ConfirmModal,
     Modal
   },
   setup() {
-    const modalOption = ref<ModalOption>({ style: { width: '400px' } })
+    const modalOption = ref<ModalOption>({ style: { width: '450px' } })
     const itemDropdown = ref<Unit[]>([])
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const useUnitApi = apiUnit()
-
+    const confirmDialog = ref<any>(null)
+    const openConfirm = ref(false)
     const header = ref<IColumn[]>([
       {
         key: 'itemCode',
@@ -135,15 +139,19 @@ export default defineComponent({
     }
 
     async function deleteItem(data: any) {
-      loader.setLoadingOn()
-      const { statusCode } = await useItemApi().deleteItem(data.itemId)
-      if (statusCode === status.deleteSuccess) {
-        toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
-      } else {
-        toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
+      openConfirm.value = true
+      if (await confirmDialog.value.getConfirmResult()) {
+        loader.setLoadingOn()
+        const { statusCode } = await useItemApi().deleteItem(data.itemId)
+        if (statusCode === status.deleteSuccess) {
+          toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
+        } else {
+          toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
+        }
+        await getItemData()
+        loader.setLoadingOff()
       }
-      await getItemData()
-      loader.setLoadingOff()
+      openConfirm.value = false
     }
     async function modalOpen(item: any = null) {
       loader.setLoadingOn()
@@ -209,6 +217,8 @@ export default defineComponent({
       itemDropdown,
       itemRequest,
       unitSelect,
+      confirmDialog,
+      openConfirm,
       modalOption
     }
   }

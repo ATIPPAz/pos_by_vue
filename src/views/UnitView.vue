@@ -19,7 +19,7 @@
         <button id="addButton" class="blue" @click="modelOpen(undefined)">เพิ่ม</button>
       </div>
 
-      <DataTable ref="confirmDialog" @click="t" :data="unitData" :column="header" :option="option">
+      <DataTable :data="unitData" :column="header" :option="option">
         <template #cell-unitName="slotProp">{{ slotProp.data.unitName }}</template>
         <template #cell-idRowAction="data">
           <div>
@@ -45,8 +45,8 @@
           <button @click="saveChange" class="blue">save change</button>
         </template>
       </Modal>
+      <ConfirmModal ref="confirmDialog" :open="openConfirm" />
     </template>
-    <ConfirmModal ref="confirmDialog" @vnode-mounted="t" />
   </MainFrame>
 </template>
 
@@ -75,7 +75,7 @@ export default defineComponent({
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const confirmDialog = ref<any>(null)
-    console.log(confirmDialog.value)
+    const openConfirm = ref(false)
 
     const header = ref<IColumn[]>([
       {
@@ -100,10 +100,10 @@ export default defineComponent({
       }
       open.value = true
     }
-    async function deleteUnit(data: any) {
-      console.log(confirmDialog.value)
 
-      if (await confirmDialog.value.openConfirmModal()) {
+    async function deleteUnit(data: any) {
+      openConfirm.value = true
+      if (await confirmDialog.value.getConfirmResult()) {
         loader.setLoadingOn()
         const { statusCode } = await useUnitApi().deleteUnit(data.unitId)
         if (statusCode === status.deleteSuccess) {
@@ -114,6 +114,7 @@ export default defineComponent({
         await getUnit()
         loader.setLoadingOff()
       }
+      openConfirm.value = false
     }
 
     async function saveChange() {
@@ -144,15 +145,16 @@ export default defineComponent({
       open.value = false
       unitInput.value = ''
     }
-    function t() {
-      console.log(confirmDialog.value)
-    }
+
     async function getUnit() {
       const res = (await useUnitApi().getUnit()).data!
       unitData.value = res
     }
     onMounted(async () => {
       loader.setLoadingOn()
+      const d = document.querySelector('.confirm-modal')
+      console.log(d)
+
       await getUnit()
       loader.setLoadingOff()
     })
@@ -167,9 +169,9 @@ export default defineComponent({
       unitInput,
       title,
       closeDialog,
+      openConfirm,
       open,
-      confirmDialog,
-      t
+      confirmDialog
     }
   }
 })

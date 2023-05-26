@@ -1,6 +1,6 @@
 <template>
   <div class="modal" v-if="open" style="padding-top: 20px">
-    <div class="modal-content" :style="option?.style ? { ...option.style } : 'width:400px'">
+    <div class="modal-content" :style="option?.style ? { ...option.style } : 'width:450px'">
       <div class="modal-header">
         <slot name="header">
           <span class="close" @click="$emit('modal:close')"> &times; </span>

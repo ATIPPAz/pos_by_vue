@@ -166,6 +166,7 @@
         <button @click="saveChange" class="blue">Select this item</button>
       </template>
     </ModelDialog>
+    <ConfirmModal ref="confirmDialog" :open="openConfirm" />
   </main>
 </template>
 
@@ -178,13 +179,15 @@ import { ref, computed, watch, defineComponent } from 'vue'
 import type { Item } from '@/interface/item.interface'
 import type { Receipt } from '@/interface/receipt.interface'
 import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+
 import { inject } from 'vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { onMounted } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
-  components: { DataTable, ModelDialog },
+  components: { DataTable, ModelDialog, ConfirmModal },
   props: {
     isView: {
       type: Boolean,
@@ -193,6 +196,8 @@ export default defineComponent({
   },
 
   setup(props) {
+    const confirmDialog = ref<any>(null)
+    const openConfirm = ref(false)
     const loader = inject(loaderPluginSymbol)
     const toast = inject(toastPluginSymbol)
     const route = useRoute()
@@ -286,10 +291,14 @@ export default defineComponent({
         selectItemModel.value = item
       }
     }
-    function removeItemInReceipt(data: any) {
-      if (receiptData.value.receiptdetails) {
-        receiptData.value.receiptdetails.splice(data.index, 1)
+    async function removeItemInReceipt(data: any) {
+      openConfirm.value = true
+      if (await confirmDialog.value.getConfirmResult()) {
+        if (receiptData.value.receiptdetails) {
+          receiptData.value.receiptdetails.splice(data.index, 1)
+        }
       }
+      openConfirm.value = false
     }
     function formatDateForDisplay(date: Date): string {
       const dayNo = (date.getDate() + '').padStart(2, '0')
@@ -399,6 +408,8 @@ export default defineComponent({
       itemModel,
       header,
       option,
+      confirmDialog,
+      openConfirm,
       date
     }
   }
