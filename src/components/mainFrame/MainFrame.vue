@@ -11,7 +11,7 @@ import { defineComponent } from 'vue'
 export default defineComponent({})
 </script>
 
-<style scope>
+<style scoped>
 .backBtn {
   cursor: pointer;
   color: rgb(0, 0, 0);

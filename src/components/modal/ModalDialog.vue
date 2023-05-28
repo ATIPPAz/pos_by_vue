@@ -3,7 +3,7 @@
     <div class="modal-content" :style="option?.style ? { ...option.style } : 'width:450px'">
       <div class="modal-header">
         <slot name="header">
-          <span class="close" @click="$emit('modal:close')"> &times; </span>
+          <span class="close" @click="$emit('update:open', false)"> &times; </span>
           <p class="modal-title">modal</p>
         </slot>
       </div>
@@ -13,7 +13,7 @@
       </div>
       <div class="modal-footer">
         <slot name="footer">
-          <button @click="$emit('modal:close')" class="gray" style="margin-right: 8px">
+          <button @click="$emit('update:open', false)" class="gray" style="margin-right: 8px">
             close
           </button>
         </slot>
@@ -36,6 +36,11 @@ export default defineComponent({
     option: {
       type: Object as PropType<ModalOption>,
       required: false
+    }
+  },
+  emits: {
+    'update:open'(value: boolean) {
+      return true
     }
   }
 })

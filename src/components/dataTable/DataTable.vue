@@ -142,7 +142,7 @@ export default defineComponent({
 })
 </script>
 
-<style scope>
+<style scoped>
 table.dataTable {
   border-collapse: collapse;
   margin: 25px 0;

@@ -16,7 +16,7 @@ import { ref, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 
 interface Menu {
-  path: string
+  routeName: string
   label: string
 }
 export default defineComponent({
@@ -26,13 +26,13 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const menus = ref<Menu[]>([
-      { label: 'ตั้งค่าหน่วยนับ', path: '/unit' },
-      { label: 'ตั้งค่าไอเทม', path: '/item' },
-      { label: 'ดูใบเสร็จรับเงิน', path: '/receipt' },
-      { label: 'ออกใบเสร็จรับเงิน', path: '/pos' }
+      { label: 'ตั้งค่าหน่วยนับ', routeName: 'unit' },
+      { label: 'ตั้งค่าไอเทม', routeName: 'item' },
+      { label: 'ดูใบเสร็จรับเงิน', routeName: 'receipt' },
+      { label: 'ออกใบเสร็จรับเงิน', routeName: 'pos' }
     ])
     function cardClick(menu: Menu) {
-      router.push(menu.path)
+      router.push({ name: menu.routeName })
     }
     return {
       menus,

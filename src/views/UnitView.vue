@@ -45,7 +45,7 @@
           <button @click="saveChange" class="blue">save change</button>
         </template>
       </Modal>
-      <ConfirmModal ref="confirmDialog" :open="openConfirm" />
+      <ConfirmModal ref="confirmDialog" v-model:open="openConfirm" />
     </template>
   </MainFrame>
 </template>
@@ -102,7 +102,9 @@ export default defineComponent({
     }
 
     async function deleteUnit(data: any) {
-      openConfirm.value = true
+      // openConfirm.value = true
+      console.log(confirmDialog.value)
+
       if (await confirmDialog.value.getConfirmResult()) {
         loader.setLoadingOn()
         const { statusCode } = await useUnitApi().deleteUnit(data.unitId)
@@ -114,7 +116,7 @@ export default defineComponent({
         await getUnit()
         loader.setLoadingOff()
       }
-      openConfirm.value = false
+      // openConfirm.value = false
     }
 
     async function saveChange() {

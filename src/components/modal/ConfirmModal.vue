@@ -1,5 +1,5 @@
 <template>
-  <ModelDialog :open="open" :option="option">
+  <ModelDialog v-model:open="openLocal" :option="option">
     <template #header>
       <span class="close" @click="closeModel(false)"> &times; </span>
       <h1 class="modal-title">ต้องการดำเนินการต่อหรือไม่?</h1>
@@ -16,6 +16,7 @@
 import ModelDialog from '@/components/modal/ModalDialog.vue'
 import { defineComponent, ref } from 'vue'
 import type { ModalOption } from '@/interface/modal.interface'
+import { computed } from 'vue'
 
 export default defineComponent({
   components: { ModelDialog },
@@ -25,9 +26,23 @@ export default defineComponent({
       required: true
     }
   },
-  setup() {
+  emits: {
+    'update:open'(value: boolean) {
+      return true
+    }
+  },
+  setup(props, { emit }) {
     let res: any = null
+    const openLocal = computed({
+      get() {
+        return props.open
+      },
+      set(value) {
+        emit('update:open', value)
+      }
+    })
     function getConfirmResult() {
+      openLocal.value = true
       return new Promise((resolve) => {
         res = resolve
       })
@@ -40,11 +55,13 @@ export default defineComponent({
       }
     })
     function closeModel(result: boolean) {
+      openLocal.value = false
       res(result)
     }
     return {
       getConfirmResult,
       closeModel,
+      openLocal,
       option
     }
   }

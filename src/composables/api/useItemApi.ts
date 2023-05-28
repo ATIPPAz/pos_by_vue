@@ -1,20 +1,20 @@
 import { getRequest, createRequest } from './fetchHelper'
 import { endpoint } from './endpoint'
-import type { Item } from '@/interface/item.interface'
+import type { ItemApiResponse, ItemApiRequest } from '@/interface/item.interface'
 import type { Api } from '@/interface/api'
 const controller = 'item'
 export function useItemApi() {
   async function getItem() {
     return await getRequest(`${endpoint}${controller}/getItems`)
       .then(async (e: any) => {
-        return (await e.json()) as Api<Item[]>
+        return (await e.json()) as Api<ItemApiResponse[]>
       })
       .catch((e: any) => {
         console.log(e)
         return { statusCode: 500, data: null }
       })
   }
-  async function createItem(data: Item) {
+  async function createItem(data: ItemApiRequest) {
     return await createRequest(`${endpoint}${controller}/createItem`, data)
       .then(async (e: any) => {
         return (await e.json()) as Api
@@ -24,7 +24,7 @@ export function useItemApi() {
         return { statusCode: 500, data: null }
       })
   }
-  async function updateItem(data: Item) {
+  async function updateItem(data: ItemApiRequest) {
     return await createRequest(`${endpoint}${controller}/updateItem`, data)
       .then(async (e: any) => {
         return (await e.json()) as Api

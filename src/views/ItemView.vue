@@ -28,27 +28,19 @@
           <div class="item-grid">
             <div class="item">
               รหัสสินค้า: <br />
-              <input type="text" v-model="itemRequest.itemCode" />
+              <input type="text" v-model="itemForm.itemCode" />
             </div>
             <div class="item">
               ชื่อสินค้า: <br />
-              <input type="text" v-model="itemRequest.itemName" />
+              <input type="text" v-model="itemForm.itemName" />
             </div>
             <div class="item">
               ราคา: <br />
-              <input type="number" v-model="itemRequest.itemPrice" min="0" step="1" />
+              <input type="number" v-model="itemForm.itemPrice" min="0" step="1" />
             </div>
             <div class="item">
               หน่วย: <br />
-              <select v-model="unitSelect">
-                <option
-                  v-for="unit in itemDropdown"
-                  :value="{ unitId: unit.unitId, unitName: unit.unitName }"
-                  :key="unit.unitId"
-                >
-                  {{ unit.unitName }}
-                </option>
-              </select>
+              <InputDropdown v-model="itemForm.unitId" :options="unitDropdownOption" />
             </div>
           </div>
         </template>
@@ -64,13 +56,14 @@
 
 <script lang="ts">
 import MainFrame from '@/components/mainFrame/MainFrame.vue'
-import { ref, defineComponent, onMounted, inject, watch } from 'vue'
+import { ref, defineComponent, onMounted, inject, watch, computed } from 'vue'
 import Modal from '@/components/modal/ModalDialog.vue'
-
+import { InputDropdown } from '@/components/input'
 import { useItemApi, useUnitApi as apiUnit } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
+import type { Option } from '@/interface/dropdown'
 
-import type { Item } from '@/interface/item.interface'
+import type { Item, ItemForm, ItemApiRequest } from '@/interface/item.interface'
 import DataTable from '@/components/dataTable/DataTable.vue'
 import type { ModalOption } from '@/interface/modal.interface'
 
@@ -84,13 +77,14 @@ import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
   components: {
     MainFrame,
+    InputDropdown,
     DataTable,
     ConfirmModal,
     Modal
   },
   setup() {
     const modalOption = ref<ModalOption>({ style: { width: '450px' } })
-    const itemDropdown = ref<Unit[]>([])
+    const unitDropdown = ref<Unit[]>([])
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const useUnitApi = apiUnit()
@@ -109,17 +103,33 @@ export default defineComponent({
     const option = ref<TableOption>({
       actionLabel: 'ดำเนินการ'
     })
-    const itemRequest = ref<Item>({ itemPrice: 0, itemCode: '', itemName: '' })
-    const unitSelect = ref<Unit>({})
+    const unitDropdownOption = computed((): Option<number>[] =>
+      unitDropdown.value.map((e) => {
+        return {
+          id: e.unitId!,
+          label: e.unitName!
+        }
+      })
+    )
+    const itemForm = ref<ItemForm>({ itemPrice: 0, itemCode: '', itemName: '' })
+    const unitSelect = ref<number>(-1)
     const openModal = ref(false)
     const titleModal = ref('เพิ่มสินค้า')
     async function saveChange() {
-      loader.setLoadingOn()
       let statusCode = 0
+      if (!itemForm.value.unitId) {
+        toast.error('ไม่สำเร็จ', 'กรุณาเลือกหน่วยนับ')
+        return
+      }
+      loader.setLoadingOn()
+      const itemApiForm: ItemApiRequest = {
+        ...itemForm.value,
+        unitId: itemForm.value.unitId!
+      }
       if (titleModal.value === 'เพิ่มสินค้า') {
-        statusCode = (await useItemApi().createItem(itemRequest.value)).statusCode
+        statusCode = (await useItemApi().createItem(itemApiForm)).statusCode
       } else {
-        statusCode = (await useItemApi().updateItem(itemRequest.value)).statusCode
+        statusCode = (await useItemApi().updateItem(itemApiForm)).statusCode
       }
       if (statusCode === status.createSuccess || statusCode === status.updateSuccess) {
         toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
@@ -127,12 +137,11 @@ export default defineComponent({
         toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
       }
       openModal.value = false
-      itemRequest.value = {
+      itemForm.value = {
         itemCode: '',
         itemName: '',
         itemPrice: 0,
-        unitId: unitSelect.value?.unitId,
-        unitName: unitSelect.value?.unitName
+        unitId: undefined
       }
       await getItemData()
       loader.setLoadingOff()
@@ -159,44 +168,29 @@ export default defineComponent({
       if (item) {
         titleModal.value = 'แก้ไขสินค้า'
         openModal.value = true
-        itemRequest.value = item
+        itemForm.value = item
       } else {
         titleModal.value = 'เพิ่มสินค้า'
         openModal.value = true
       }
       loader.setLoadingOff()
     }
-    watch(
-      () => unitSelect.value,
-      (newValue) => {
-        itemRequest.value.unitId = newValue?.unitId
-        itemRequest.value.unitName = newValue?.unitName
-      }
-    )
-    watch(
-      () => itemRequest.value,
-      (newValue) => {
-        unitSelect.value.unitId = newValue.unitId ?? 0
-        unitSelect.value.unitName = newValue.unitName ?? ''
-      },
-      { deep: true }
-    )
+
     function closeDialog() {
       openModal.value = false
-      itemRequest.value = {
+      itemForm.value = {
         itemCode: '',
         itemName: '',
         itemPrice: 0,
-        unitId: unitSelect.value?.unitId,
-        unitName: unitSelect.value?.unitName
+        unitId: undefined
       }
     }
     async function getItemData() {
       itemData.value = (await useItemApi().getItem()).data ?? []
     }
     async function getUnitData() {
-      itemDropdown.value = (await useUnitApi.getUnit()).data ?? []
-      unitSelect.value = itemDropdown.value[0]
+      unitDropdown.value = (await useUnitApi.getUnit()).data ?? []
+      itemForm.value.unitId = unitDropdown.value[0].unitId
     }
     onMounted(async () => {
       loader.setLoadingOn()
@@ -210,12 +204,13 @@ export default defineComponent({
       itemData,
       openModal,
       titleModal,
+      unitDropdownOption,
       saveChange,
       deleteItem,
       modalOpen,
       closeDialog,
-      itemDropdown,
-      itemRequest,
+      itemDropdown: unitDropdown,
+      itemForm: itemForm,
       unitSelect,
       confirmDialog,
       openConfirm,
