@@ -19,10 +19,9 @@
           </div>
         </template>
       </DataTable>
-      <Modal :open="openModal" :option="modalOption">
+      <Modal v-model:open="openModal" :option="modalOption">
         <template #header>
           <p class="modal-title">{{ titleModal }}</p>
-          <span class="close" @click="closeDialog"> &times; </span>
         </template>
         <template #body>
           <div class="item-grid">
@@ -55,8 +54,8 @@
 </template>
 
 <script lang="ts">
-import MainFrame from '@/components/mainFrame/MainFrame.vue'
-import { ref, defineComponent, onMounted, inject, watch, computed } from 'vue'
+import MainFrame from '@/components/layout/BasicLayout.vue'
+import { ref, defineComponent, onMounted, inject, computed } from 'vue'
 import Modal from '@/components/modal/ModalDialog.vue'
 import { InputDropdown } from '@/components/input'
 import { useItemApi, useUnitApi } from '@/composables/api'
@@ -176,6 +175,9 @@ export default defineComponent({
       } else {
         titleModal.value = 'เพิ่มสินค้า'
         openModal.value = true
+        itemForm.value.itemCode = ''
+        itemForm.value.itemName = ''
+        itemForm.value.itemPrice = 0
       }
       loader.setLoadingOff()
     }

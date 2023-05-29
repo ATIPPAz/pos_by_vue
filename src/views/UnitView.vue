@@ -31,9 +31,8 @@
         </template>
       </DataTable>
 
-      <Modal :open="open">
+      <Modal v-model:open="open">
         <template #header>
-          <span class="close" @click="closeDialog"> &times; </span>
           <p class="modal-title">{{ title }}</p>
         </template>
         <template #body>
@@ -53,7 +52,7 @@
 <script lang="ts">
 import { onMounted, ref, inject, defineComponent } from 'vue'
 import { statusCode as status } from '@/interface/api'
-import MainFrame from '@/components/mainFrame/MainFrame.vue'
+import MainFrame from '@/components/layout/BasicLayout.vue'
 import Modal from '@/components/modal/ModalDialog.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 
@@ -96,10 +95,10 @@ export default defineComponent({
         title.value = 'แก้ไขหน่วย'
       } else {
         title.value = 'เพิ่มสินค้า'
+        unitForm.value.unitName = ''
       }
       open.value = true
     }
-
     async function deleteUnit(data: any) {
       if (await confirmDialog.value.getConfirmResult()) {
         loader.setLoadingOn()
@@ -113,7 +112,6 @@ export default defineComponent({
         loader.setLoadingOff()
       }
     }
-
     async function saveChange() {
       loader.setLoadingOn()
       let statusCode = 0
@@ -134,12 +132,10 @@ export default defineComponent({
       await getUnit()
       loader.setLoadingOff()
     }
-
     function closeDialog() {
       open.value = false
       unitForm.value = { unitId: -1, unitName: '' }
     }
-
     async function getUnit() {
       const res = await unitApi.getUnit().then((e) => e.data!)
       unitData.value = res

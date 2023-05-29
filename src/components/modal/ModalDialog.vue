@@ -3,9 +3,9 @@
     <div class="modal-content" :style="option?.style ? { ...option.style } : 'width:450px'">
       <div class="modal-header">
         <slot name="header">
-          <span class="close" @click="$emit('update:open', false)"> &times; </span>
           <p class="modal-title">modal</p>
         </slot>
+        <span class="close" @click="$emit('update:open', false)"> &times; </span>
       </div>
 
       <div class="modal-body">

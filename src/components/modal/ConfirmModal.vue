@@ -1,7 +1,6 @@
 <template>
   <ModalDialog v-model:open="open" :option="option">
     <template #header>
-      <span class="close" @click="closeModal(false)"> &times; </span>
       <h1 class="modal-title">ต้องการดำเนินการต่อหรือไม่?</h1>
     </template>
     <template #body> กด yes เพื่อตกลง หรือกด no เพื่อกดยกเลิก </template>
@@ -57,7 +56,6 @@ export default defineComponent({
       }
     })
     function closeModal(result: boolean) {
-      // openLocal.value = false
       open.value = false
       res(result)
     }
@@ -65,7 +63,6 @@ export default defineComponent({
       getConfirmResult,
       closeModal,
       open,
-      // openLocal,
       option
     }
   }

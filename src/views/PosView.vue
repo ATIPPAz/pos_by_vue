@@ -110,9 +110,8 @@
       <div style="margin-top: 14px" class="j-end">
         <button @click="saveReceipt" class="blue">บันทึก</button>
       </div>
-      <ModalDialog :open="modalOpen">
+      <ModalDialog v-model:open="modalOpen">
         <template #header>
-          <span class="close" @click="closeModal"> &times; </span>
           <p class="modal-title">{{ titleModal }}</p>
         </template>
         <template #body>
@@ -167,7 +166,7 @@ import type { Item } from '@/interface/item'
 import type { Receipt } from '@/interface/receipt'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
-import MainFrame from '@/components/mainFrame/MainFrame.vue'
+import MainFrame from '@/components/layout/BasicLayout.vue'
 import { inject } from 'vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { onMounted } from 'vue'
@@ -235,6 +234,7 @@ export default defineComponent({
     async function openModal(emitData: any = null) {
       loader?.setLoadingOn()
       titleModal.value = 'เพิ่มสินค้า'
+      selectItemModal.value = null
       itemSelectIndex.value = -1
       if (emitData !== null) {
         titleModal.value = 'แก้ไขสินค้า'

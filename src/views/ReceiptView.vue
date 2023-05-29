@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import router from '@/router'
-import MainFrame from '@/components/mainFrame/MainFrame.vue'
+import MainFrame from '@/components/layout/BasicLayout.vue'
 import DataTable from '@/components/dataTable/DataTable.vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { useReceiptApi } from '@/composables/api'

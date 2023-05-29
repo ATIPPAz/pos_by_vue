@@ -33,21 +33,21 @@ export default defineComponent({
       { label: 'ดูใบเสร็จรับเงิน', routeName: 'receipt' },
       { label: 'ออกใบเสร็จรับเงิน', routeName: 'pos' }
     ])
-    let click = 0
+    // let click = 0
     function cardClick(menu: Menu) {
-      if (menu.routeName === 'unit') {
-        toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
-        toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
-        toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
-      } else if (menu.routeName === 'pos') {
-        toast.error('ไม่สำเร็จ', 'ทดสอบสำเร็จ' + click)
-      } else if (menu.routeName === 'item') {
-        toast.info('เเจ้งเตือน', 'ทดสอบสำเร็จ' + click)
-      } else {
-        toast.warning('คำเตือน', 'ทดสอบสำเร็จ' + click)
-      }
-      click += 1
-      // router.push({ name: menu.routeName })
+      // if (menu.routeName === 'unit') {
+      //   toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
+      //   toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
+      //   toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
+      // } else if (menu.routeName === 'pos') {
+      //   toast.error('ไม่สำเร็จ', 'ทดสอบสำเร็จ' + click)
+      // } else if (menu.routeName === 'item') {
+      //   toast.info('เเจ้งเตือน', 'ทดสอบสำเร็จ' + click)
+      // } else {
+      //   toast.warning('คำเตือน', 'ทดสอบสำเร็จ' + click)
+      // }
+      // click += 1
+      router.push({ name: menu.routeName })
     }
     return {
       menus,
