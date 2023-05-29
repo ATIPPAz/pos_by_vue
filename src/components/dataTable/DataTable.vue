@@ -1,15 +1,11 @@
 <template>
   <div>
     <table class="dataTable">
-      <!-- <caption></caption> -->
       <thead>
         <tr>
-          <!-- <th v-if="option.rowNumber === undefined || option.rowNumber">No.</th> -->
-          <!-- a = {width:30px} -->
           <th :style="col.style || {}" v-for="col in columnInfos" :key="col.key">
             {{ col.label }}
           </th>
-          <!-- <th v-if="hasActionSlot">{{ option.actionLabel }}</th> -->
         </tr>
       </thead>
       <tbody>
@@ -25,46 +21,8 @@
               <slot :name="`cell-${col.key}`" :data="row" :index="index" />
             </template>
           </td>
-          <!-- <td v-if="option.rowNumber === undefined || option.rowNumber">{{ index + 1 }}</td> -->
-          <!-- <td v-for="col in columnInfos" :key="col.key">
-            <div v-if="col.styleCol && col.styleCol.type === 'input:text'">
-              <input
-                type="text"
-                :style="!!col.styleCol.style ? { ...col.styleCol.style } : ''"
-                :class="col.styleCol.class"
-                v-model="row[col.key]"
-                :disabled="col.styleCol.disabled"
-              />
-            </div>
-            <div v-else-if="col.styleCol && col.styleCol.type === 'input:number'">
-              <input
-                type="number"
-                v-model="row[col.key]"
-                :style="!!col.styleCol.style ? { ...col.styleCol.style } : ''"
-                :class="col.styleCol.class"
-                :min="col.styleCol.inputNumberProps?.min"
-                :max="col.styleCol.inputNumberProps?.max"
-                :disabled="col.styleCol.disabled"
-              />
-            </div>
-            <div v-else-if="col.styleCol && col.styleCol.type === 'button'">
-              <button
-                @click="$emit('buttonClick', { data: row, index })"
-                :disabled="col.styleCol.disabled"
-                :class="col.styleCol.class"
-                :style="!!col.styleCol.style ? { ...col.styleCol.style } : ''"
-              >
-                {{ row[col.key] }}
-              </button>
-            </div>
-            <div v-else>
-              {{ row[col.key] }}
-            </div>
-          </td>
-          <td v-if="hasActionSlot">
-            <slot name="action" :data="{ data: row, index }"></slot>
-          </td> -->
         </tr>
+
         <slot name="specialRow"></slot>
         <tr v-show="!hasSpecialRow && dataTable.length <= 0">
           <th :colspan="column?.length ? column.length + 2 : 99">
@@ -79,7 +37,7 @@
 <script lang="ts">
 import { computed, onMounted, defineComponent } from 'vue'
 import type { PropType } from 'vue'
-import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { IColumn, TableOption } from '@/interface/dataTable.js'
 
 const idRowNumber = 'idRowNumber'
 const idRowAction = 'idRowAction'

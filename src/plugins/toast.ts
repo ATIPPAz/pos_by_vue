@@ -1,83 +1,53 @@
-import { type Plugin, type InjectionKey } from 'vue'
+import { type Plugin, type InjectionKey, ref, watch, reactive, computed } from 'vue'
 export type PluginInstance = ReturnType<typeof $toast>
 export const toastPluginSymbol: InjectionKey<PluginInstance> = Symbol('$toast')
-
+import { setTimeoutAsync } from '@/utils/setTimeoutAsync'
 export function $toast() {
-  const toast = document.createElement('div')
-  toast.classList.add('d-none')
-  toast.id = 'toast'
-  const closeBtn = document.createElement('span')
-  closeBtn.classList.add('close')
-  closeBtn.id = 'toast-close'
-  closeBtn.innerHTML = '&times;'
-  closeBtn.addEventListener('click', closeToast)
-  const toastHeader = document.createElement('div')
-  toastHeader.classList.add('toast-header')
-  const toastColor = document.createElement('div')
-  toastColor.id = 'toast-color'
-  const toastHeaderText = document.createElement('p')
-  toastHeaderText.style.margin = '0px'
-  toastHeaderText.id = 'toast-header-text'
-  toastHeader.appendChild(toastColor)
-  toastHeader.appendChild(toastHeaderText)
-  const toastContent = document.createElement('div')
-  toastContent.classList.add('toast-content')
-  toastContent.id = 'toast-content'
-  toast.appendChild(closeBtn)
-  toast.appendChild(toastHeader)
-  toast.appendChild(toastContent)
-  const page = document.getElementsByTagName('body')[0]
-  page.appendChild(toast)
-  function openToast() {
-    toast.classList.replace('d-none', 'd-block')
+  const state = reactive({ color: '', header: '', content: '', openToast: false })
+  const toastQueue = reactive<{ header: string; content: string; color: string }[]>([])
+
+  async function open(param = { header: '', content: '', color: '' }) {
+    state.color = param.color
+    state.header = param.header
+    state.content = param.content
+    state.openToast = true
+    await setTimeoutAsync(2000)
+    state.openToast = false
+    await setTimeoutAsync(250)
   }
-  function success(header = '', content = '') {
-    toastColor.style.backgroundColor = 'green'
-    toastHeaderText.textContent = 'สำเร็จ'
-    toastContent.textContent = 'ดำเนินการสำเร็จ'
-    if (header || header != '') {
-      toastHeaderText.textContent = header
-    }
-    if (content || content != '') {
-      toastContent.textContent = content
-    }
-    openToast()
-    setTimeout(closeToast, 3000)
+
+  function success(header = 'สำเร็จ', content = 'ดำเนินการสำเร็จ') {
+    addQueue({ header, content, color: 'green' })
   }
-  function error(header = '', content = '') {
-    toastColor.style.backgroundColor = 'red'
-    toastHeaderText.textContent = 'ไม่สำเร็จ'
-    toastContent.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
-    if (header || header != '') {
-      toastHeaderText.textContent = header
-    }
-    if (content || content != '') {
-      toastContent.textContent = content
-    }
-    openToast()
-    setTimeout(closeToast, 3000)
+  function info(header = 'แจ้งเตือน', content = 'แจ้งเตือน') {
+    addQueue({ header, content, color: 'blue' })
   }
-  function info(header = '', content = '') {
-    toastColor.style.backgroundColor = 'blue'
-    toastHeaderText.textContent = 'แจ้งเตือน'
-    toastContent.textContent = 'แจ้งเตือน'
-    if (header || header != '') {
-      toastHeaderText.textContent = header
-    }
-    if (content || content != '') {
-      toastContent.textContent = content
-    }
-    openToast()
-    setTimeout(closeToast, 3000)
+  function error(header = 'ไม่สำเร็จ', content = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง') {
+    addQueue({ header, content, color: 'red' })
   }
-  function closeToast() {
-    toast.classList.replace('d-block', 'd-none')
+  function warning(header = 'แจ้งเตือน', content = 'มีความผิดปกติ') {
+    addQueue({ header, content, color: 'yellow' })
+  }
+  let running = false
+
+  async function addQueue(param = { header: '', content: '', color: '' }) {
+    toastQueue.push(param)
+    if (running) {
+      return
+    }
+    while (toastQueue.length > 0) {
+      running = true
+      const element = toastQueue.shift()
+      await open(element)
+      running = false
+    }
   }
   return {
+    toastState: computed(() => state),
     success,
-    error,
     info,
-    closeToast
+    error,
+    warning
   }
 }
 

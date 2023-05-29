@@ -1,7 +1,22 @@
 import { getRequest, createRequest } from './fetchHelper'
 import { endpoint } from './endpoint'
-import type { ItemApiResponse, ItemApiRequest } from '@/interface/item.interface'
+// import type { ItemApiResponse, ItemApiRequest } from '@/interface/item'
 import type { Api } from '@/interface/api'
+export interface ItemApiRequest {
+  itemId?: number
+  itemName: string
+  itemPrice: number
+  unitId: number
+  itemCode: string
+}
+export interface ItemApiResponse {
+  itemId: number
+  itemName: string
+  itemPrice: number
+  unitId: number
+  itemCode: string
+  unitName: string
+}
 const controller = 'item'
 export function useItemApi() {
   async function getItem() {

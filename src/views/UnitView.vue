@@ -16,14 +16,14 @@
     </template>
     <template #content>
       <div class="j-end" style="margin-bottom: 14px">
-        <button id="addButton" class="blue" @click="modelOpen(undefined)">เพิ่ม</button>
+        <button id="addButton" class="blue" @click="modalOpen(undefined)">เพิ่ม</button>
       </div>
 
-      <DataTable :data="unitData" :column="header" :option="option">
+      <DataTable :data="unitData" :column="columnsData" :option="option">
         <template #cell-unitName="slotProp">{{ slotProp.data.unitName }}</template>
         <template #cell-idRowAction="data">
           <div>
-            <button @click="modelOpen(data.data)" class="yellow" style="margin-right: 8px">
+            <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">
               edit
             </button>
             <button @click="deleteUnit(data.data)" class="red">delete</button>
@@ -38,7 +38,7 @@
         </template>
         <template #body>
           ชื่อหน่วย:<br />
-          <input type="text" v-model="unitInput" />
+          <input type="text" v-model="unitForm.unitName" />
         </template>
         <template #footer>
           <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
@@ -58,10 +58,10 @@ import Modal from '@/components/modal/ModalDialog.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 
 import DataTable from '@/components/dataTable/DataTable.vue'
-import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { IColumn, TableOption } from '@/interface/dataTable'
 
-import type { Unit } from '@/interface/unit.interface'
-import { useUnitApi } from '@/composables/api/useUnitApi'
+import type { Unit } from '@/interface/unit'
+import { useUnitApi } from '@/composables/api'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
@@ -69,15 +69,14 @@ export default defineComponent({
   setup() {
     const open = ref(false)
     const title = ref('')
-    const unitInput = ref('')
     const unitData = ref<Unit[]>([])
-    const idSelect = ref<number>(0)
+    const unitForm = ref<Unit>({})
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const confirmDialog = ref<any>(null)
     const openConfirm = ref(false)
-
-    const header = ref<IColumn[]>([
+    const unitApi = useUnitApi()
+    const columnsData: IColumn[] = [
       {
         key: 'unitName',
         label: 'ชื่อ',
@@ -85,15 +84,15 @@ export default defineComponent({
           width: '70%'
         }
       }
-    ])
-    const option = ref<TableOption>({
+    ]
+    const option: TableOption = {
       actionLabel: 'ดำเนินการ',
       rowNumber: true
-    })
-    function modelOpen(data: any = null) {
+    }
+    function modalOpen(data: any = null) {
       if (data) {
-        unitInput.value = data.unitName
-        idSelect.value = data.unitId ?? -1
+        unitForm.value.unitName = data.unitName
+        unitForm.value.unitId = data.unitId ?? -1
         title.value = 'แก้ไขหน่วย'
       } else {
         title.value = 'เพิ่มสินค้า'
@@ -102,12 +101,9 @@ export default defineComponent({
     }
 
     async function deleteUnit(data: any) {
-      // openConfirm.value = true
-      console.log(confirmDialog.value)
-
       if (await confirmDialog.value.getConfirmResult()) {
         loader.setLoadingOn()
-        const { statusCode } = await useUnitApi().deleteUnit(data.unitId)
+        const { statusCode } = await unitApi.deleteUnit(data.unitId)
         if (statusCode === status.deleteSuccess) {
           toast.success('สำเร็จ', 'ลบหน่วยนับสำเร็จ')
         } else {
@@ -116,21 +112,17 @@ export default defineComponent({
         await getUnit()
         loader.setLoadingOff()
       }
-      // openConfirm.value = false
     }
 
     async function saveChange() {
       loader.setLoadingOn()
       let statusCode = 0
       if (title.value === 'เพิ่มสินค้า') {
-        statusCode = (await useUnitApi().createUnit({ unitName: unitInput.value })).statusCode
+        statusCode = await unitApi
+          .createUnit({ unitName: unitForm.value.unitName! })
+          .then((e) => e.statusCode)
       } else {
-        statusCode = (
-          await useUnitApi().updateUnit({
-            unitId: idSelect.value,
-            unitName: unitInput.value
-          })
-        ).statusCode
+        statusCode = await unitApi.updateUnit(unitForm.value).then((e) => e.statusCode)
       }
       if (status.updateSuccess === statusCode || status.createSuccess === statusCode) {
         toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
@@ -138,39 +130,36 @@ export default defineComponent({
         toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
       }
       open.value = false
-      unitInput.value = ''
+      unitForm.value = { unitId: -1, unitName: '' }
       await getUnit()
       loader.setLoadingOff()
     }
 
     function closeDialog() {
       open.value = false
-      unitInput.value = ''
+      unitForm.value = { unitId: -1, unitName: '' }
     }
 
     async function getUnit() {
-      const res = (await useUnitApi().getUnit()).data!
+      const res = await unitApi.getUnit().then((e) => e.data!)
       unitData.value = res
     }
     onMounted(async () => {
       loader.setLoadingOn()
-      const d = document.querySelector('.confirm-modal')
-      console.log(d)
-
       await getUnit()
       loader.setLoadingOff()
     })
 
     return {
-      unitData,
-      header,
-      option,
-      modelOpen,
       saveChange,
+      modalOpen,
       deleteUnit,
-      unitInput,
-      title,
       closeDialog,
+      unitData,
+      columnsData,
+      option,
+      unitForm,
+      title,
       openConfirm,
       open,
       confirmDialog

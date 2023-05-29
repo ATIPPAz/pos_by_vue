@@ -1,6 +1,6 @@
-import { getRequest, createRequest } from './fetchHelper.js'
+import { getRequest, createRequest } from './fetchHelper'
 import { endpoint } from './endpoint.js'
-import type { UnitCreate, Unit } from '@/interface/unit.interface.js'
+import type { UnitCreate, Unit } from '@/interface/unit'
 import type { Api } from '@/interface/api'
 
 const controller = 'unit'

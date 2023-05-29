@@ -1,49 +1,51 @@
 <template>
-  <ModelDialog v-model:open="openLocal" :option="option">
+  <ModalDialog v-model:open="open" :option="option">
     <template #header>
-      <span class="close" @click="closeModel(false)"> &times; </span>
+      <span class="close" @click="closeModal(false)"> &times; </span>
       <h1 class="modal-title">ต้องการดำเนินการต่อหรือไม่?</h1>
     </template>
     <template #body> กด yes เพื่อตกลง หรือกด no เพื่อกดยกเลิก </template>
     <template #footer>
-      <button @click="closeModel(false)" class="gray" style="margin-right: 8px">No</button>
-      <button @click="closeModel(true)" class="blue">Yes</button>
+      <button @click="closeModal(false)" class="gray" style="margin-right: 8px">No</button>
+      <button @click="closeModal(true)" class="blue">Yes</button>
     </template>
-  </ModelDialog>
+  </ModalDialog>
 </template>
 
 <script lang="ts">
-import ModelDialog from '@/components/modal/ModalDialog.vue'
+import ModalDialog from '@/components/modal/ModalDialog.vue'
 import { defineComponent, ref } from 'vue'
-import type { ModalOption } from '@/interface/modal.interface'
+import type { ModalOption } from '@/interface/modal.js'
 import { computed } from 'vue'
 
 export default defineComponent({
-  components: { ModelDialog },
-  props: {
-    open: {
-      type: Boolean,
-      required: true
-    }
-  },
-  emits: {
-    'update:open'(value: boolean) {
-      return true
-    }
-  },
+  components: { ModalDialog },
+  // props: {
+  //   open: {
+  //     type: Boolean,
+  //     required: true
+  //   }
+  // },
+  // emits: {
+  //   'update:open'(value: boolean) {
+  //     return true
+  //   }
+  // },
   setup(props, { emit }) {
-    let res: any = null
-    const openLocal = computed({
-      get() {
-        return props.open
-      },
-      set(value) {
-        emit('update:open', value)
-      }
-    })
+    let res: (value: boolean | PromiseLike<boolean>) => void
+    const open = ref(false)
+    // const openLocal = computed({
+    //   get() {
+    //     return props.open
+    //   },
+    //   set(value) {
+    //     emit('update:open', value)
+    //   }
+    // })
     function getConfirmResult() {
-      openLocal.value = true
-      return new Promise((resolve) => {
+      // openLocal.value = true
+      open.value = true
+      return new Promise<boolean>((resolve) => {
         res = resolve
       })
     }
@@ -54,14 +56,16 @@ export default defineComponent({
         'margin-top': '200px'
       }
     })
-    function closeModel(result: boolean) {
-      openLocal.value = false
+    function closeModal(result: boolean) {
+      // openLocal.value = false
+      open.value = false
       res(result)
     }
     return {
       getConfirmResult,
-      closeModel,
-      openLocal,
+      closeModal,
+      open,
+      // openLocal,
       option
     }
   }

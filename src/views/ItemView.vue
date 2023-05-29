@@ -21,8 +21,8 @@
       </DataTable>
       <Modal :open="openModal" :option="modalOption">
         <template #header>
-          <span class="close" @click="closeDialog"> &times; </span>
           <p class="modal-title">{{ titleModal }}</p>
+          <span class="close" @click="closeDialog"> &times; </span>
         </template>
         <template #body>
           <div class="item-grid">
@@ -49,7 +49,7 @@
           <button @click="saveChange" class="blue">save change</button>
         </template>
       </Modal>
-      <ConfirmModal ref="confirmDialog" :open="openConfirm" />
+      <ConfirmModal ref="confirmDialog" />
     </template>
   </MainFrame>
 </template>
@@ -59,18 +59,17 @@ import MainFrame from '@/components/mainFrame/MainFrame.vue'
 import { ref, defineComponent, onMounted, inject, watch, computed } from 'vue'
 import Modal from '@/components/modal/ModalDialog.vue'
 import { InputDropdown } from '@/components/input'
-import { useItemApi, useUnitApi as apiUnit } from '@/composables/api'
+import { useItemApi, useUnitApi } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
 import type { Option } from '@/interface/dropdown'
-
-import type { Item, ItemForm, ItemApiRequest } from '@/interface/item.interface'
+import type { ItemApiRequest } from '@/composables/api/useItemApi'
+import type { Item, ItemForm } from '@/interface/item'
 import DataTable from '@/components/dataTable/DataTable.vue'
-import type { ModalOption } from '@/interface/modal.interface'
+import type { ModalOption } from '@/interface/modal.js'
 
-import type { IColumn, TableOption } from '@/interface/dataTable.interface'
-import type { Unit } from '@/interface/unit.interface'
+import type { IColumn, TableOption } from '@/interface/dataTable'
+import type { Unit } from '@/interface/unit.js'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
-
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
 
@@ -87,7 +86,8 @@ export default defineComponent({
     const unitDropdown = ref<Unit[]>([])
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
-    const useUnitApi = apiUnit()
+    const unitApi = useUnitApi()
+    const itemApi = useItemApi()
     const confirmDialog = ref<any>(null)
     const openConfirm = ref(false)
     const header = ref<IColumn[]>([
@@ -127,9 +127,9 @@ export default defineComponent({
         unitId: itemForm.value.unitId!
       }
       if (titleModal.value === 'เพิ่มสินค้า') {
-        statusCode = (await useItemApi().createItem(itemApiForm)).statusCode
+        statusCode = (await itemApi.createItem(itemApiForm)).statusCode
       } else {
-        statusCode = (await useItemApi().updateItem(itemApiForm)).statusCode
+        statusCode = (await itemApi.updateItem(itemApiForm)).statusCode
       }
       if (statusCode === status.createSuccess || statusCode === status.updateSuccess) {
         toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
@@ -148,19 +148,23 @@ export default defineComponent({
     }
 
     async function deleteItem(data: any) {
-      openConfirm.value = true
+      // openConfirm.value = trues
+      // console.log(openConfirm.value)
+
       if (await confirmDialog.value.getConfirmResult()) {
         loader.setLoadingOn()
-        const { statusCode } = await useItemApi().deleteItem(data.itemId)
+        const { statusCode } = await itemApi.deleteItem(data.itemId)
         if (statusCode === status.deleteSuccess) {
           toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
         } else {
           toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
         }
         await getItemData()
-        loader.setLoadingOff()
       }
-      openConfirm.value = false
+      loader.setLoadingOff()
+      // console.log(openConfirm.value)
+
+      // openConfirm.value = false
     }
     async function modalOpen(item: any = null) {
       loader.setLoadingOn()
@@ -186,10 +190,10 @@ export default defineComponent({
       }
     }
     async function getItemData() {
-      itemData.value = (await useItemApi().getItem()).data ?? []
+      itemData.value = (await itemApi.getItem()).data ?? []
     }
     async function getUnitData() {
-      unitDropdown.value = (await useUnitApi.getUnit()).data ?? []
+      unitDropdown.value = (await unitApi.getUnit()).data ?? []
       itemForm.value.unitId = unitDropdown.value[0].unitId
     }
     onMounted(async () => {

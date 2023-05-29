@@ -14,7 +14,8 @@
 import Card from '@/components/card/CardMenu.vue'
 import { ref, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
-
+import { inject } from 'vue'
+import { toastPluginSymbol } from '@/plugins/toast'
 interface Menu {
   routeName: string
   label: string
@@ -25,17 +26,32 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter()
+    const toast = inject(toastPluginSymbol)!
     const menus = ref<Menu[]>([
       { label: 'ตั้งค่าหน่วยนับ', routeName: 'unit' },
       { label: 'ตั้งค่าไอเทม', routeName: 'item' },
       { label: 'ดูใบเสร็จรับเงิน', routeName: 'receipt' },
       { label: 'ออกใบเสร็จรับเงิน', routeName: 'pos' }
     ])
+    let click = 0
     function cardClick(menu: Menu) {
-      router.push({ name: menu.routeName })
+      if (menu.routeName === 'unit') {
+        toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
+        toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
+        toast.success('สำเร็จ', 'ทดสอบสำเร็จ' + click)
+      } else if (menu.routeName === 'pos') {
+        toast.error('ไม่สำเร็จ', 'ทดสอบสำเร็จ' + click)
+      } else if (menu.routeName === 'item') {
+        toast.info('เเจ้งเตือน', 'ทดสอบสำเร็จ' + click)
+      } else {
+        toast.warning('คำเตือน', 'ทดสอบสำเร็จ' + click)
+      }
+      click += 1
+      // router.push({ name: menu.routeName })
     }
     return {
       menus,
+      toast,
       cardClick
     }
   }

@@ -8,12 +8,12 @@
       <input type="text" name="" id="dateNow" disabled :value="receiptData.receiptDate" />
     </div>
     <DataTable :column="header" :data="receiptDetailsData" :option="option">
-      <template #cell-itemCode="data">
-        <button v-if="!isView" class="gray" @click="openModal(data)">
-          {{ data.data.itemCode }}
+      <template #cell-itemCode="{ index, data }">
+        <button v-if="!isView" class="gray" @click="openModal({ data, index })">
+          {{ data.itemCode }}
         </button>
         <template v-else>
-          {{ data.data.itemCode }}
+          {{ data.itemCode }}
         </template>
       </template>
       <template #cell-itemName="{ data }">
@@ -125,21 +125,21 @@
     <div style="margin-top: 14px" class="j-end">
       <button @click="saveReceipt" class="blue" v-show="!isView">บันทึก</button>
     </div>
-    <ModelDialog :open="modalOpen">
+    <ModalDialog :open="modalOpen">
       <template #header>
-        <span class="close" @click="closeModel"> &times; </span>
+        <span class="close" @click="closeModal"> &times; </span>
         <p class="modal-title">{{ titleModal }}</p>
       </template>
       <template #body>
-        <div v-if="itemModel.length > 0" style="max-height: 150px; overflow-y: auto">
+        <div v-if="itemModal.length > 0" style="max-height: 150px; overflow-y: auto">
           <ul>
             <li
-              v-for="item in itemModel"
+              v-for="item in itemModal"
               :key="item.itemId"
               style="cursor: pointer"
               @click="selectItemInModal(item)"
               :class="
-                selectItemModel && selectItemModel.itemId === item.itemId ? 'select font-bold' : ''
+                selectItemModal && selectItemModal.itemId === item.itemId ? 'select font-bold' : ''
               "
             >
               {{ item.itemName }}
@@ -148,37 +148,37 @@
         </div>
         <div v-else>Nodata</div>
         <hr />
-        <div style="padding: 0px 16px" v-if="selectItemModel !== null">
+        <div style="padding: 0px 16px" v-if="selectItemModal !== null">
           <h1>item detail</h1>
           <p class="font-bold">รหัสสินค้า</p>
-          <p>{{ selectItemModel.itemCode }}</p>
+          <p>{{ selectItemModal.itemCode }}</p>
           <br />
           <p class="font-bold">ชื่อสินค้า</p>
-          <p>{{ selectItemModel.itemName }}</p>
+          <p>{{ selectItemModal.itemName }}</p>
           <br />
           <p class="font-bold">ราคา</p>
-          <p>{{ selectItemModel.itemPrice }}</p>
+          <p>{{ selectItemModal.itemPrice }}</p>
         </div>
         <div v-else>No Item Selected</div>
       </template>
       <template #footer>
-        <button @click="closeModel" class="gray" style="margin-right: 8px">close</button>
+        <button @click="closeModal" class="gray" style="margin-right: 8px">close</button>
         <button @click="saveChange" class="blue">Select this item</button>
       </template>
-    </ModelDialog>
+    </ModalDialog>
     <ConfirmModal ref="confirmDialog" :open="openConfirm" />
   </main>
 </template>
 
 <script lang="ts">
 import DataTable from '@/components/dataTable/DataTable.vue'
-import ModelDialog from '@/components/modal/ModalDialog.vue'
+import ModalDialog from '@/components/modal/ModalDialog.vue'
 import { useRoute } from 'vue-router'
 import { useReceiptApi, useItemApi } from '@/composables/api'
 import { ref, computed, watch, defineComponent } from 'vue'
-import type { Item } from '@/interface/item.interface'
-import type { Receipt } from '@/interface/receipt.interface'
-import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { Item } from '@/interface/item'
+import type { Receipt } from '@/interface/receipt'
+import type { IColumn, TableOption } from '@/interface/dataTable'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 
 import { inject } from 'vue'
@@ -187,7 +187,7 @@ import { onMounted } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
-  components: { DataTable, ModelDialog, ConfirmModal },
+  components: { DataTable, ModalDialog, ConfirmModal },
   props: {
     isView: {
       type: Boolean,
@@ -202,13 +202,15 @@ export default defineComponent({
     const toast = inject(toastPluginSymbol)
     const route = useRoute()
     const receiptId = ref(-1)
+    const receiptApi = useReceiptApi()
+    const itemApi = useItemApi()
     let itemSelectIndex = ref(-1)
     const date = ref<string>()
     const modalOpen = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
     const titleModal = ref('เลือกสินค้า')
-    const itemModel = ref<Item[]>([])
-    const selectItemModel = ref<Item | null>(null)
+    const itemModal = ref<Item[]>([])
+    const selectItemModal = ref<Item | null>(null)
     const header = ref<IColumn[]>([
       {
         key: 'itemCode',
@@ -232,7 +234,7 @@ export default defineComponent({
       receiptdetails: []
     })
     async function getPrefix() {
-      return (await useReceiptApi().getPrefix()).data
+      return (await receiptApi.getPrefix()).data
     }
     async function setDefaultReceipt() {
       const prefix = await getPrefix()
@@ -257,21 +259,21 @@ export default defineComponent({
       itemSelectIndex.value = -1
       if (emitData !== null) {
         titleModal.value = 'แก้ไขสินค้า'
-        selectItemModel.value = emitData.data
+        selectItemModal.value = emitData.data
         itemSelectIndex.value = emitData.index
       }
-      itemModel.value = (await useItemApi().getItem()).data ?? []
+      itemModal.value = (await itemApi.getItem()).data ?? []
       modalOpen.value = true
       loader?.setLoadingOff()
     }
     function saveChange() {
       const selectedItem = {
-        unitId: selectItemModel.value?.unitId ?? 0,
-        unitName: selectItemModel.value?.unitName ?? '',
-        itemId: selectItemModel.value?.itemId ?? 0,
-        itemCode: selectItemModel.value?.itemCode ?? '',
-        itemName: selectItemModel.value?.itemName ?? '',
-        itemPrice: selectItemModel.value?.itemPrice ?? 0,
+        unitId: selectItemModal.value?.unitId ?? 0,
+        unitName: selectItemModal.value?.unitName ?? '',
+        itemId: selectItemModal.value?.itemId ?? 0,
+        itemCode: selectItemModal.value?.itemCode ?? '',
+        itemName: selectItemModal.value?.itemName ?? '',
+        itemPrice: selectItemModal.value?.itemPrice ?? 0,
         itemAmount: 0,
         itemDiscount: 0,
         itemQty: 0,
@@ -283,12 +285,12 @@ export default defineComponent({
         receiptData.value.receiptdetails?.push(selectedItem)
       }
       modalOpen.value = false
-      selectItemModel.value = null
+      selectItemModal.value = null
     }
 
     function selectItemInModal(item: Item) {
-      if (selectItemModel.value === null || selectItemModel.value.itemId !== item.itemId) {
-        selectItemModel.value = item
+      if (selectItemModal.value === null || selectItemModal.value.itemId !== item.itemId) {
+        selectItemModal.value = item
       }
     }
     async function removeItemInReceipt(data: any) {
@@ -306,9 +308,9 @@ export default defineComponent({
       const year = date.getFullYear()
       return `${dayNo}/${month}/${year}`
     }
-    function closeModel() {
+    function closeModal() {
       modalOpen.value = false
-      selectItemModel.value = null
+      selectItemModal.value = null
     }
     async function saveReceipt() {
       if (receiptData.value.receiptDate) {
@@ -316,7 +318,7 @@ export default defineComponent({
       }
       delete receiptData.value.receiptCode
       loader?.setLoadingOn()
-      const { statusCode } = await useReceiptApi().createReceipt(receiptData.value)
+      const { statusCode } = await receiptApi.createReceipt(receiptData.value)
       if (statusCode === status.createSuccess) {
         toast?.success('สำเร็จ', 'สร้างสินค้ารายการสั่งซื้อสำเร็จ')
       } else {
@@ -331,7 +333,7 @@ export default defineComponent({
       await setDefaultReceipt()
       if (props.isView) {
         receiptId.value = parseInt(route.params.receiptId.toString())
-        const { data, statusCode } = await useReceiptApi().getOneReceipt(receiptId.value)
+        const { data, statusCode } = await receiptApi.getOneReceipt(receiptId.value)
         if (statusCode === status.error) {
           toast?.error('เกิดข้อผิดพลาด', 'เซิฟเวอร์มีปัญหา')
         }
@@ -399,13 +401,13 @@ export default defineComponent({
       selectItemInModal,
       saveChange,
       saveReceipt,
-      closeModel,
+      closeModal,
       receiptDetailsData,
-      selectItemModel,
+      selectItemModal,
       receiptData,
       titleModal,
       modalOpen,
-      itemModel,
+      itemModal,
       header,
       option,
       confirmDialog,

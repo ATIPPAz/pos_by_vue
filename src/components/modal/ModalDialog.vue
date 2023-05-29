@@ -25,7 +25,7 @@
 <script lang="ts">
 import type { PropType } from 'vue'
 import { defineComponent } from 'vue'
-import type { ModalOption } from '@/interface/modal.interface'
+import type { ModalOption } from '@/interface/modal.js'
 export default defineComponent({
   props: {
     open: {
@@ -73,7 +73,8 @@ export default defineComponent({
 .modal-header {
   border-bottom: 1px solid #c2c2c2;
   padding: 16px;
-  /* display: flex; */
+  display: flex;
+  justify-content: space-between;
 }
 
 .modal-body {
@@ -94,7 +95,7 @@ export default defineComponent({
   color: #aaaaaa;
   top: -5px;
   float: right;
-  font-size: 28px;
+  /* font-size: 28px; */
   font-weight: bold;
 }
 

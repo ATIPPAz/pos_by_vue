@@ -35,8 +35,8 @@ import { loaderPluginSymbol } from '@/plugins/loading'
 import { useReceiptApi } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
 import { ref, defineComponent, computed, onMounted, inject } from 'vue'
-import type { Receipt } from '@/interface/receipt.interface'
-import type { IColumn, TableOption } from '@/interface/dataTable.interface'
+import type { Receipt } from '@/interface/receipt'
+import type { IColumn, TableOption } from '@/interface/dataTable'
 import { toastPluginSymbol } from '@/plugins/toast'
 
 export default defineComponent({
@@ -45,6 +45,7 @@ export default defineComponent({
     DataTable
   },
   setup() {
+    const receiptApi = useReceiptApi()
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
@@ -60,8 +61,8 @@ export default defineComponent({
     const option = ref<TableOption>({
       actionLabel: 'ดำเนินการ'
     })
+    const _receipt = ref<Receipt[]>([])
     const receiptData = computed(() => _receipt.value)
-    let _receipt = ref<Receipt[]>([])
     async function searchReceipt() {
       loader.setLoadingOn()
       await getReceipt()
@@ -79,7 +80,7 @@ export default defineComponent({
       return `${year}-${month}-${dayNo}`
     }
     async function getReceipt() {
-      const res = await useReceiptApi().getAllReceipt(startDate.value, endDate.value)
+      const res = await receiptApi.getAllReceipt(startDate.value, endDate.value)
       if (res.statusCode === status.getSuccess) {
         _receipt.value = res.data as Receipt[]
         return res.data
