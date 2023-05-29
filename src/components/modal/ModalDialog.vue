@@ -1,6 +1,6 @@
 <template>
   <div class="modal" v-if="open" style="padding-top: 20px">
-    <div class="modal-content" :style="option?.style ? { ...option.style } : 'width:450px'">
+    <div class="modal-content" :style="style">
       <div class="modal-header">
         <slot name="header">
           <p class="modal-title">modal</p>
@@ -24,7 +24,7 @@
 
 <script lang="ts">
 import type { PropType } from 'vue'
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
 import type { ModalOption } from '@/interface/modal.js'
 export default defineComponent({
   props: {
@@ -41,6 +41,14 @@ export default defineComponent({
   emits: {
     'update:open'(value: boolean) {
       return true
+    }
+  },
+  setup(ctx) {
+    const style = computed(() => {
+      return ctx.option?.style ? { ...ctx.option.style } : { width: '400px' }
+    })
+    return {
+      style
     }
   }
 })

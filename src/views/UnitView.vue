@@ -63,17 +63,18 @@ import type { Unit } from '@/interface/unit'
 import { useUnitApi } from '@/composables/api'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
+import { computed } from 'vue'
 export default defineComponent({
   components: { DataTable, Modal, MainFrame, ConfirmModal },
   setup() {
     const open = ref(false)
-    const title = ref('')
     const unitData = ref<Unit[]>([])
     const unitForm = ref<Unit>({})
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const confirmDialog = ref<any>(null)
     const openConfirm = ref(false)
+    const isEdit = ref(false)
     const unitApi = useUnitApi()
     const columnsData: IColumn[] = [
       {
@@ -92,9 +93,9 @@ export default defineComponent({
       if (data) {
         unitForm.value.unitName = data.unitName
         unitForm.value.unitId = data.unitId ?? -1
-        title.value = 'แก้ไขหน่วย'
+        isEdit.value = true
       } else {
-        title.value = 'เพิ่มสินค้า'
+        isEdit.value = false
         unitForm.value.unitName = ''
       }
       open.value = true
@@ -115,7 +116,7 @@ export default defineComponent({
     async function saveChange() {
       loader.setLoadingOn()
       let statusCode = 0
-      if (title.value === 'เพิ่มสินค้า') {
+      if (!isEdit.value) {
         statusCode = await unitApi
           .createUnit({ unitName: unitForm.value.unitName! })
           .then((e) => e.statusCode)
@@ -145,7 +146,9 @@ export default defineComponent({
       await getUnit()
       loader.setLoadingOff()
     })
-
+    const title = computed(() => {
+      return !isEdit.value ? 'เพิ่มสินค้า' : 'แก้ไขหน่วย'
+    })
     return {
       saveChange,
       modalOpen,
