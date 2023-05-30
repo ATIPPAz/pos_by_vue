@@ -5,7 +5,7 @@ export function getRequest(path: string) {
       'Content-Type': 'application/json',
       'access-control-allow-origin': '*'
     },
-    mode: 'cors'
+    mode: 'no-cors'
   })
 }
 export function updateRequest(path = '', data = {}, type = '') {
