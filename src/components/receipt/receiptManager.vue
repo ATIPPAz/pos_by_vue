@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <main>
     <div style="margin-bottom: 14px">
       <label for="receiptCode">เลขที่เอกสาร:</label> <br />
@@ -125,54 +125,14 @@
     <div style="margin-top: 14px" class="j-end">
       <button @click="saveReceipt" class="blue" v-show="!isView">บันทึก</button>
     </div>
-    <ModalDialog :open="modalOpen">
-      <template #header>
-        <span class="close" @click="closeModal"> &times; </span>
-        <p class="modal-title">{{ titleModal }}</p>
-      </template>
-      <template #body>
-        <div v-if="itemModal.length > 0" style="max-height: 150px; overflow-y: auto">
-          <ul>
-            <li
-              v-for="item in itemModal"
-              :key="item.itemId"
-              style="cursor: pointer"
-              @click="selectItemInModal(item)"
-              :class="
-                selectItemModal && selectItemModal.itemId === item.itemId ? 'select font-bold' : ''
-              "
-            >
-              {{ item.itemName }}
-            </li>
-          </ul>
-        </div>
-        <div v-else>Nodata</div>
-        <hr />
-        <div style="padding: 0px 16px" v-if="selectItemModal !== null">
-          <h1>item detail</h1>
-          <p class="font-bold">รหัสสินค้า</p>
-          <p>{{ selectItemModal.itemCode }}</p>
-          <br />
-          <p class="font-bold">ชื่อสินค้า</p>
-          <p>{{ selectItemModal.itemName }}</p>
-          <br />
-          <p class="font-bold">ราคา</p>
-          <p>{{ selectItemModal.itemPrice }}</p>
-        </div>
-        <div v-else>No Item Selected</div>
-      </template>
-      <template #footer>
-        <button @click="closeModal" class="gray" style="margin-right: 8px">close</button>
-        <button @click="saveChange" class="blue">Select this item</button>
-      </template>
-    </ModalDialog>
+    <ModalSelectItem :data-source="itemModal" />
     <ConfirmModal ref="confirmDialog" :open="openConfirm" />
   </main>
 </template>
 
 <script lang="ts">
 import DataTable from '@/components/dataTable/DataTable.vue'
-import ModalDialog from '@/components/modal/ModalDialog.vue'
+import ModalSelectItem from '@/components/modal/ModalSelectItem.vue'
 import { useRoute } from 'vue-router'
 import { useReceiptApi, useItemApi } from '@/composables/api'
 import { ref, computed, watch, defineComponent } from 'vue'
@@ -186,8 +146,9 @@ import { loaderPluginSymbol } from '@/plugins/loading'
 import { onMounted } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
+import { reactive } from 'vue'
 export default defineComponent({
-  components: { DataTable, ModalDialog, ConfirmModal },
+  components: { DataTable, ModalSelectItem, ConfirmModal },
   props: {
     isView: {
       type: Boolean,
@@ -209,7 +170,7 @@ export default defineComponent({
     const modalOpen = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
     const titleModal = ref('เลือกสินค้า')
-    const itemModal = ref<Item[]>([])
+    const itemModal = reactive<{}>([])
     const selectItemModal = ref<Item | null>(null)
     const header = ref<IColumn[]>([
       {
@@ -262,9 +223,13 @@ export default defineComponent({
         selectItemModal.value = emitData.data
         itemSelectIndex.value = emitData.index
       }
-      itemModal.value = (await itemApi.getItem()).data ?? []
-      modalOpen.value = true
+      const res = await itemApi.getItem()
+      if(res.data){
+
+        itemModal.value =
+      }
       loader?.setLoadingOff()
+      modalOpen.value = true
     }
     function saveChange() {
       const selectedItem = {
@@ -288,11 +253,6 @@ export default defineComponent({
       selectItemModal.value = null
     }
 
-    function selectItemInModal(item: Item) {
-      if (selectItemModal.value === null || selectItemModal.value.itemId !== item.itemId) {
-        selectItemModal.value = item
-      }
-    }
     async function removeItemInReceipt(data: any) {
       openConfirm.value = true
       if (await confirmDialog.value.getConfirmResult()) {
@@ -398,7 +358,6 @@ export default defineComponent({
     return {
       removeItemInReceipt,
       openModal,
-      selectItemInModal,
       saveChange,
       saveReceipt,
       closeModal,
@@ -425,4 +384,4 @@ export default defineComponent({
 li {
   margin: 8px 0px;
 }
-</style>
+</style> -->

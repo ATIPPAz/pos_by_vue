@@ -1,5 +1,5 @@
 <template>
-  <ModalDialog v-model:open="open" :option="option">
+  <ModalDialog v-model:open="openLocal" :option="option">
     <template #header>
       <h1 class="modal-title">ต้องการดำเนินการต่อหรือไม่?</h1>
     </template>
@@ -19,31 +19,31 @@ import { computed } from 'vue'
 
 export default defineComponent({
   components: { ModalDialog },
-  // props: {
-  //   open: {
-  //     type: Boolean,
-  //     required: true
-  //   }
-  // },
-  // emits: {
-  //   'update:open'(value: boolean) {
-  //     return true
-  //   }
-  // },
+  props: {
+    open: {
+      type: Boolean,
+      required: true
+    }
+  },
+  emits: {
+    'update:open'(value: boolean) {
+      return true
+    }
+  },
   setup(props, { emit }) {
-    let res: (value: boolean | PromiseLike<boolean>) => void
+    let res: ((value: boolean | PromiseLike<boolean>) => void) | null
     const open = ref(false)
-    // const openLocal = computed({
-    //   get() {
-    //     return props.open
-    //   },
-    //   set(value) {
-    //     emit('update:open', value)
-    //   }
-    // })
+    const openLocal = computed({
+      get() {
+        return props.open
+      },
+      set(value) {
+        emit('update:open', value)
+      }
+    })
     function getConfirmResult() {
-      // openLocal.value = true
-      open.value = true
+      openLocal.value = true
+      // open.value = true
       return new Promise<boolean>((resolve) => {
         res = resolve
       })
@@ -57,12 +57,15 @@ export default defineComponent({
     })
     function closeModal(result: boolean) {
       open.value = false
-      res(result)
+      if (res) {
+        res(result)
+        res = null
+      }
     }
     return {
       getConfirmResult,
       closeModal,
-      open,
+      openLocal,
       option
     }
   }

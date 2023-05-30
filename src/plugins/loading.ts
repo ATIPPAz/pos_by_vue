@@ -4,11 +4,20 @@ export const loaderPluginSymbol: InjectionKey<PluginInstance> = Symbol('$loader'
 
 function $loader() {
   const loader = ref(false)
+  const loaderQueue: string[] = []
   function setLoadingOn() {
-    loader.value = true
+    loaderQueue.push('')
+    if (loaderQueue.length === 1) {
+      loader.value = true
+    }
   }
   function setLoadingOff() {
-    loader.value = false
+    if (loaderQueue.length > 0) {
+      loaderQueue.pop()
+    }
+    if (loaderQueue.length === 0 && loader.value) {
+      loader.value = false
+    }
   }
   return {
     loadingState: computed(() => loader.value),

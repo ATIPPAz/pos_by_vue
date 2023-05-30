@@ -1,5 +1,7 @@
 <template>
-  <div class="loader" v-if="loadingState"></div>
+  <div class="loader-block" v-if="loadingState">
+    <div class="loader"></div>
+  </div>
 </template>
 <script lang="ts">
 import { ref, defineComponent, watch, inject } from 'vue'
@@ -15,6 +17,15 @@ export default defineComponent({
 })
 </script>
 <style scoped>
+.loader-block {
+  background-color: rgba(115, 115, 115, 0.1);
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+}
 .loader {
   margin: auto;
   border: 16px solid #f3f3f3;

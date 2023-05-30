@@ -1,21 +1,27 @@
 import { getRequest, createRequest } from './fetchHelper'
 import { endpoint } from './endpoint.js'
-import type { UnitCreate, Unit } from '@/interface/unit'
 import type { Api } from '@/interface/api'
-
+export interface UnitApiRequest {
+  unitId?: number
+  unitName: string
+}
+export interface UnitApiResponse {
+  unitId: number
+  unitName: string
+}
 const controller = 'unit'
 export function useUnitApi() {
-  async function getUnit(): Promise<Api<Unit[] | null>> {
+  async function getUnit(): Promise<Api<UnitApiResponse[] | null>> {
     return await getRequest(`${endpoint}${controller}/getUnits`)
       .then(async (e: any) => {
-        return (await e.json()) as Api<Unit[]>
+        return (await e.json()) as Api<UnitApiResponse[]>
       })
       .catch((e: any) => {
         console.log(e)
         return { statusCode: 500, data: null }
       })
   }
-  async function createUnit(data: UnitCreate): Promise<Api> {
+  async function createUnit(data: UnitApiRequest): Promise<Api> {
     return await createRequest(`${endpoint}${controller}/createUnit`, data)
       .then(async (e: any) => {
         return (await e.json()) as Api
@@ -25,7 +31,7 @@ export function useUnitApi() {
         return { statusCode: 500, data: null }
       })
   }
-  async function updateUnit(data: Unit): Promise<Api> {
+  async function updateUnit(data: UnitApiRequest): Promise<Api> {
     return await createRequest(`${endpoint}${controller}/updateUnit`, data)
       .then(async (e: any) => {
         return (await e.json()) as Api

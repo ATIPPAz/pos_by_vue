@@ -59,7 +59,7 @@ import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import DataTable from '@/components/dataTable/DataTable.vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 
-import type { Unit } from '@/interface/unit'
+import type { Unit, UnitForm } from '@/interface/unit'
 import { useUnitApi } from '@/composables/api'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
@@ -69,7 +69,7 @@ export default defineComponent({
   setup() {
     const open = ref(false)
     const unitData = ref<Unit[]>([])
-    const unitForm = ref<Unit>({})
+    const unitForm = ref<UnitForm>({ unitName: '' })
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
     const confirmDialog = ref<any>(null)

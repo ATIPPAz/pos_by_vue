@@ -11,7 +11,7 @@
       </div>
       <DataTable :column="header" :data="receiptDetailsData" :option="option">
         <template #cell-itemCode="{ index, data }">
-          <button class="gray" @click="openModal({ data, index })">
+          <button class="gray" @click="openModal(index)">
             {{ data.itemCode }}
           </button>
         </template>
@@ -46,21 +46,21 @@
         <template #cell-idRowAction="data">
           <button @click="removeItemInReceipt(data)" class="red">ลบ</button>
         </template>
-        <template #specialRow>
-          <tr>
-            <td style="padding: 16px">{{ (receiptDetailsData?.length ?? 0) + 1 }}</td>
-            <td style="padding: 16px">
-              <button @click="openModal()" class="blue">เลือกสินค้า</button>
-            </td>
-            <td style="padding: 16px"></td>
-            <td style="padding: 16px"></td>
-            <td style="padding: 16px"><input disabled value="0" /></td>
-            <td style="padding: 16px">0</td>
-            <td style="padding: 16px"><input disabled value="0" /></td>
-            <td style="padding: 16px"><input disabled value="0" /></td>
-            <td style="padding: 16px">0</td>
-            <td style="padding: 16px"><button disabled>ลบ</button></td>
-          </tr>
+        <template #[`row-${receiptDetailsData.length-1}`]>
+          <td style="padding: 16px">{{ receiptDetailsData.length }}</td>
+          <td style="padding: 16px">
+            <button @click="openModal(receiptDetailsData.length - 1)" class="blue">
+              เลือกสินค้า
+            </button>
+          </td>
+          <td style="padding: 16px"></td>
+          <td style="padding: 16px"></td>
+          <td style="padding: 16px"><input disabled value="0" /></td>
+          <td style="padding: 16px">0</td>
+          <td style="padding: 16px"><input disabled value="0" /></td>
+          <td style="padding: 16px"><input disabled value="0" /></td>
+          <td style="padding: 16px">0</td>
+          <td style="padding: 16px"><button disabled>ลบ</button></td>
         </template>
       </DataTable>
       <div class="j-end" style="margin-top: 14px">
@@ -110,48 +110,8 @@
       <div style="margin-top: 14px" class="j-end">
         <button @click="saveReceipt" class="blue">บันทึก</button>
       </div>
-      <ModalDialog v-model:open="modalOpen">
-        <template #header>
-          <p class="modal-title">{{ titleModal }}</p>
-        </template>
-        <template #body>
-          <div v-if="itemModal.length > 0" style="max-height: 150px; overflow-y: auto">
-            <ul>
-              <li
-                v-for="item in itemModal"
-                :key="item.itemId"
-                style="cursor: pointer"
-                @click="selectItemInModal(item)"
-                :class="
-                  selectItemModal && selectItemModal.itemId === item.itemId
-                    ? 'select font-bold'
-                    : ''
-                "
-              >
-                {{ item.itemName }}
-              </li>
-            </ul>
-          </div>
-          <div v-else>Nodata</div>
-          <hr />
-          <div style="padding: 0px 16px" v-if="selectItemModal !== null">
-            <h1>item detail</h1>
-            <p class="font-bold">รหัสสินค้า</p>
-            <p>{{ selectItemModal.itemCode }}</p>
-            <br />
-            <p class="font-bold">ชื่อสินค้า</p>
-            <p>{{ selectItemModal.itemName }}</p>
-            <br />
-            <p class="font-bold">ราคา</p>
-            <p>{{ selectItemModal.itemPrice }}</p>
-          </div>
-          <div v-else>No Item Selected</div>
-        </template>
-        <template #footer>
-          <button @click="closeModal" class="gray" style="margin-right: 8px">close</button>
-          <button @click="saveChange" class="blue">Select this item</button>
-        </template>
-      </ModalDialog>
+      <ModalSelectItem :all-items="itemModal" ref="modalSelectItem" />
+
       <ConfirmModal ref="confirmDialog" :open="openConfirm" />
     </template>
   </MainFrame>
@@ -160,6 +120,7 @@
 <script lang="ts">
 import DataTable from '@/components/dataTable/DataTable.vue'
 import ModalDialog from '@/components/modal/ModalDialog.vue'
+import ModalSelectItem from '@/components/modal/ModalSelectItem.vue'
 import { useReceiptApi, useItemApi } from '@/composables/api'
 import { ref, computed, watch, defineComponent } from 'vue'
 import type { Item } from '@/interface/item'
@@ -173,7 +134,7 @@ import { onMounted } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
-  components: { DataTable, ModalDialog, ConfirmModal, MainFrame },
+  components: { DataTable, ModalSelectItem, ConfirmModal, MainFrame },
 
   setup() {
     const confirmDialog = ref<any>(null)
@@ -184,6 +145,7 @@ export default defineComponent({
     const itemApi = useItemApi()
     const itemSelectIndex = ref(-1)
     const date = ref<string>()
+    const modalSelectItem = ref<InstanceType<typeof ModalSelectItem>>()
     const modalOpen = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
     const titleModal = ref('เลือกสินค้า')
@@ -231,19 +193,52 @@ export default defineComponent({
       const date = dateString.split('/')
       return `${date[2]}-${date[1]}-${date[0]}`
     }
-    async function openModal(emitData: any = null) {
+    async function openModal(index: number) {
       loader?.setLoadingOn()
-      titleModal.value = 'เพิ่มสินค้า'
-      selectItemModal.value = null
-      itemSelectIndex.value = -1
-      if (emitData !== null) {
-        titleModal.value = 'แก้ไขสินค้า'
-        selectItemModal.value = emitData.data
-        itemSelectIndex.value = emitData.index
-      }
-      itemModal.value = (await itemApi.getItem()).data ?? []
-      modalOpen.value = true
+      const res = await itemApi.getItem()
+      itemModal.value = res.data ?? []
       loader?.setLoadingOff()
+      if (index === receiptDetailsData.value.length - 1) {
+        const itemId = await modalSelectItem.value?.getItemSelectResult()
+        if (itemId) {
+          const item = itemModal.value.find((e) => e.itemId === itemId)!
+          const selectedItem = {
+            unitId: item.unitId ?? 0,
+            unitName: item.unitName ?? '',
+            itemId: item.itemId ?? 0,
+            itemCode: item.itemCode ?? '',
+            itemName: item.itemName ?? '',
+            itemPrice: item.itemPrice ?? 0,
+            itemAmount: 0,
+            itemDiscount: 0,
+            itemQty: 0,
+            itemDiscountPercent: 0
+          }
+          receiptData.value.receiptdetails?.push(selectedItem)
+        }
+      } else {
+        const itemId = await modalSelectItem.value?.getItemSelectResult(
+          receiptDetailsData.value[index].itemId
+        )
+        if (itemId) {
+          if (itemId !== receiptDetailsData.value[index].itemId) {
+            const item = itemModal.value.find((e) => e.itemId === itemId)!
+            const selectedItem = {
+              unitId: item.unitId ?? 0,
+              unitName: item.unitName ?? '',
+              itemId: item.itemId ?? 0,
+              itemCode: item.itemCode ?? '',
+              itemName: item.itemName ?? '',
+              itemPrice: item.itemPrice ?? 0,
+              itemAmount: 0,
+              itemDiscount: 0,
+              itemQty: 0,
+              itemDiscountPercent: 0
+            }
+            receiptData.value.receiptdetails[index] = selectedItem
+          }
+        }
+      }
     }
     function saveChange() {
       const selectedItem = {
@@ -315,7 +310,19 @@ export default defineComponent({
     ;(async () => {})()
 
     const receiptDetailsData = computed(() => {
-      return receiptData.value.receiptdetails
+      const res = receiptData.value.receiptdetails.slice()
+      res.push({
+        unitName: '',
+        itemId: 0,
+        itemCode: '',
+        itemName: '',
+        itemPrice: 0,
+        itemAmount: 0,
+        itemDiscount: 0,
+        itemQty: 0,
+        itemDiscountPercent: 0
+      })
+      return res
     })
 
     watch(
@@ -365,6 +372,7 @@ export default defineComponent({
       saveChange,
       saveReceipt,
       closeModal,
+      modalSelectItem,
       receiptDetailsData,
       selectItemModal,
       receiptData,

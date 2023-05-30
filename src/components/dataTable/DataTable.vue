@@ -10,25 +10,26 @@
       </thead>
       <tbody>
         <tr v-for="(row, index) in dataTable" :key="index">
-          <td v-for="col in columnInfos" :key="col.key">
-            <template v-if="col.key === idRowNumber">
-              {{ index + 1 }}
-            </template>
-            <template v-else-if="col.key === idRowAction">
-              <slot :name="`cell-${idRowAction}`" :data="row" :index="index" />
-            </template>
-            <template v-else>
-              <slot :name="`cell-${col.key}`" :data="row" :index="index" />
-            </template>
-          </td>
+          <slot :name="`row-${index}`">
+            <td v-for="col in columnInfos" :key="col.key">
+              <template v-if="col.key === idRowNumber">
+                {{ index + 1 }}
+              </template>
+              <template v-else-if="col.key === idRowAction">
+                <slot :name="`cell-${idRowAction}`" :data="row" :index="index" />
+              </template>
+              <template v-else>
+                <slot :name="`cell-${col.key}`" :data="row" :index="index" />
+              </template>
+            </td>
+          </slot>
         </tr>
 
-        <slot name="specialRow"></slot>
-        <tr v-show="!hasSpecialRow && dataTable.length <= 0">
+        <!-- <tr v-show="!hasSpecialRow && dataTable.length <= 0">
           <th :colspan="column?.length ? column.length + 2 : 99">
             <div style="font-size: 48px; font-weight: bold; color: #adadad">No data</div>
           </th>
-        </tr>
+        </tr> -->
       </tbody>
     </table>
   </div>

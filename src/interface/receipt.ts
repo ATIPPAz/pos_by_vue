@@ -3,7 +3,7 @@ export interface Receipt {
   receiptCode?: string
   receiptDate?: string
   receiptGrandTotal?: number
-  receiptdetails?: ReceiptDetail[]
+  receiptdetails: ReceiptDetail[]
   receiptTotalBeforeDiscount?: number
   receiptTotalDiscount?: number
   receiptSubTotal?: number
@@ -21,6 +21,17 @@ export interface ReceiptDetail {
   itemCode: string
   unitName: string
   receiptId?: number
+}
+export interface ReceiptForm {
+  receiptId?: number
+  receiptCode?: string
+  receiptDate: string
+  receiptGrandTotal: number
+  receiptdetails: ReceiptDetail[]
+  receiptTotalBeforeDiscount: number
+  receiptTotalDiscount: number
+  receiptSubTotal: number
+  receiptTradeDiscount: number
 }
 export interface Prefix {
   prefix_keyName: string
