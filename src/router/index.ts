@@ -5,7 +5,7 @@ const PosView = () => import('@/views/PosView.vue')
 const ItemView = () => import('@/views/ItemView.vue')
 const ReceiptView = () => import('@/views/ReceiptView.vue')
 const ReceiptDetailView = () => import('@/views/ReceiptDetailView.vue')
-import MainLayout from '@/components/layout/MainLayout.vue'
+import MainLayout from '../components/layout/MainLayout.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
