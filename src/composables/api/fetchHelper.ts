@@ -1,5 +1,11 @@
 export function getRequest(path: string) {
-  return fetch(path, { method: 'GET' })
+  return fetch(path, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'access-control-allow-origin': '*'
+    }
+  })
 }
 export function updateRequest(path = '', data = {}, type = '') {
   return fetch(path, {
