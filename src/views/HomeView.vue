@@ -9,12 +9,20 @@
       </Card>
     </div>
   </div>
+  <SlideCard style="width: 400px">
+    <template #head>test</template>
+    <template #body>testdasd.sa;d.</template>
+    <template #footer>daspldps</template>
+    <template #left> <h1>&lt;</h1> </template>
+    <template #right><h1>&gt;</h1> </template>
+  </SlideCard>
 </template>
 <script lang="ts">
 import Card from '@/components/card/CardMenu.vue'
 import { ref, defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { inject } from 'vue'
+import SlideCard from '@/components/card/SlideCard.vue'
 import { toastPluginSymbol } from '@/plugins/toast'
 interface Menu {
   routeName: string
@@ -22,6 +30,7 @@ interface Menu {
 }
 export default defineComponent({
   components: {
+    SlideCard,
     Card
   },
   setup() {
