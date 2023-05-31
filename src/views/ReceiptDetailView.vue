@@ -8,7 +8,7 @@
         <label for="">วันที่</label> <br />
         <input type="text" name="" id="dateNow" disabled :value="receiptData.receiptDate" />
       </div>
-      <DataTable :column="header" :data="receiptData.receiptdetails" :option="option">
+      <DataTable :column="columnsData" :data="receiptData.receiptdetails" :option="option">
         <template #cell-itemCode="{ data }">
           {{ data.itemCode }}
         </template>
@@ -111,7 +111,7 @@ export default defineComponent({
     const receiptApi = useReceiptApi()
     const date = ref<string>()
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
-    const header = ref<IColumn[]>([
+    const columnsData = ref<IColumn[]>([
       {
         key: 'itemCode',
         label: 'รหัสสินค้า'
@@ -159,7 +159,7 @@ export default defineComponent({
 
     return {
       receiptData,
-      header,
+      columnsData,
       option,
       date
     }

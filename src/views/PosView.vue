@@ -9,7 +9,7 @@
         <label for="">วันที่</label> <br />
         <input type="text" name="" id="dateNow" disabled :value="receiptData.receiptDate" />
       </div>
-      <DataTable :column="header" :data="receiptDetailsData" :option="option">
+      <DataTable :column="columnsData" :data="receiptDetailsData" :option="option">
         <template #cell-itemCode="{ index, data }">
           <button class="gray" @click="openModal(index)">
             {{ data.itemCode }}
@@ -112,7 +112,7 @@
       </div>
       <ModalSelectItem :all-items="itemModal" ref="modalSelectItem" />
 
-      <ConfirmModal ref="confirmDialog" :open="openConfirm" />
+      <ConfirmModal ref="confirmDialog" />
     </template>
   </MainFrame>
 </template>
@@ -136,8 +136,7 @@ export default defineComponent({
   components: { DataTable, ModalSelectItem, ConfirmModal, MainFrame },
 
   setup() {
-    const confirmDialog = ref<any>(null)
-    const openConfirm = ref(false)
+    const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const loader = inject(loaderPluginSymbol)
     const toast = inject(toastPluginSymbol)
     const receiptApi = useReceiptApi()
@@ -147,10 +146,9 @@ export default defineComponent({
     const modalSelectItem = ref<InstanceType<typeof ModalSelectItem>>()
     const modalOpen = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
-    const titleModal = ref('เลือกสินค้า')
     const itemModal = ref<Item[]>([])
     const selectItemModal = ref<Item | null>(null)
-    const header = ref<IColumn[]>([
+    const columnsData = ref<IColumn[]>([
       {
         key: 'itemCode',
         label: 'รหัสสินค้า'
@@ -267,13 +265,11 @@ export default defineComponent({
       }
     }
     async function removeItemInReceipt(data: any) {
-      openConfirm.value = true
-      if (await confirmDialog.value.getConfirmResult()) {
+      if (await confirmDialog.value?.getConfirmResult()) {
         if (receiptData.value.receiptdetails) {
           receiptData.value.receiptdetails.splice(data.index, 1)
         }
       }
-      openConfirm.value = false
     }
     function formatDateForDisplay(date: Date): string {
       const dayNo = (date.getDate() + '').padStart(2, '0')
@@ -383,13 +379,13 @@ export default defineComponent({
       receiptDetailsData,
       selectItemModal,
       receiptData,
-      titleModal,
+
       modalOpen,
       itemModal,
-      header,
+      columnsData,
       option,
       confirmDialog,
-      openConfirm,
+
       date
     }
   }
