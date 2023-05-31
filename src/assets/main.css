@@ -83,6 +83,8 @@
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   padding: 24px;
   color: black;
+  width: 100%;
+  height: 100%;
 }
 
 .card a {
@@ -168,7 +170,12 @@
   background-color: #6c757d;
   color: white;
 }
-
+.f-gray {
+  color: #6c757d;
+}
+.f-black {
+  color: #000;
+}
 button {
   border-radius: 5px;
   cursor: pointer;
