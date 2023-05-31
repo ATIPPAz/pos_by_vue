@@ -9,7 +9,7 @@
         <input type="date" v-model="endDate" style="margin: 0px 8px" />
         <button id="searchButton" @click="searchReceipt" class="blue">ค้นหา</button>
       </div>
-      <DataTable :column="header" :data="receiptData" :option="option">
+      <DataTable :column="columnsData" :data="receiptData" :option="option">
         <template #cell-receiptCode="{ data }">
           {{ data.receiptCode }}
         </template>
@@ -50,7 +50,7 @@ export default defineComponent({
     const toast = inject(toastPluginSymbol)!
     const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
     const endDate = ref(formatDateForDisplay(new Date()))
-    const header = ref<IColumn[]>([
+    const columnsData = ref<IColumn[]>([
       {
         key: 'receiptCode',
         label: 'เลขที่อ้างอิง'
@@ -105,7 +105,7 @@ export default defineComponent({
       openDetail,
       receiptData,
       endDate,
-      header
+      columnsData
     }
   }
 })
