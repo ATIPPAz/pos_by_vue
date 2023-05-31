@@ -1,13 +1,16 @@
 <template>
   <div class="modal" v-if="open" style="padding-top: 20px">
     <div class="modal-content" :style="style">
-      <div class="modal-header">
-        <slot name="header">
-          <p class="modal-title">modal</p>
-        </slot>
-        <span class="close" @click="$emit('update:open', false)"> &times; </span>
+      <div class="center">
+        <div class="modal-header">
+          <slot name="header">
+            <p class="modal-title">modal</p>
+          </slot>
+          <span class="close" style="font-size: 24px" @click="$emit('update:open', false)">
+            &times;
+          </span>
+        </div>
       </div>
-
       <div class="modal-body">
         <slot name="body"> you can add your slot for custom your modal here !!!</slot>
       </div>
@@ -78,10 +81,17 @@ export default defineComponent({
   border: 1px solid #c2c2c2;
 }
 
+/* .center {
+  display: table-cell;
+  width: 100%;
+  vertical-align: middle;
+} */
 .modal-header {
   border-bottom: 1px solid #c2c2c2;
   padding: 16px;
+  align-items: center;
   display: flex;
+  width: 100%;
   justify-content: space-between;
 }
 

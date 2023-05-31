@@ -19,28 +19,80 @@
         <div class="j-end" style="margin-bottom: 14px">
           <button id="addButton" class="blue" @click="modalOpen(undefined)">เพิ่ม</button>
         </div>
-        <DataTable :data="unitData" :column="columnsData" :option="option" :selectRow="selectRow">
+        <DataTable
+          :data="unitData"
+          :column="columnsData"
+          :option="option"
+          v-model:selectIndexRow="selectUnitIndex"
+        >
           <template #cell-unitName="slotProp">
             {{ slotProp.data.unitName }}
           </template>
-          <template #cell-idRowAction="data">
+          <!-- <template #cell-idRowAction="data">
             <div>
               <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">
                 edit
               </button>
               <button @click="deleteUnit(data.data)" class="red">delete</button>
             </div>
-          </template>
+          </template> -->
         </DataTable>
       </div>
     </template>
     <template #right>
       <SlideCard style="width: 100%">
-        <template #head>test</template>
-        <template #body>testdasd.sa;d.</template>
-        <template #footer>daspldps</template>
-        <template #left> <h1>&lt;</h1> </template>
-        <template #right><h1>&gt;</h1> </template>
+        <template #head> <h1>Unit Detail</h1> </template>
+        <template #body>
+          <b>ชื่อหน่วย</b><br />
+          {{ slideUnitItem ? slideUnitItem.unitName : '-' }}
+        </template>
+        <template #footer>
+          <button
+            style="margin-right: 8px"
+            :class="!!slideUnitItem ? { yellow: true } : {}"
+            :disabled="!slideUnitItem"
+            @click="modalOpen(slideUnitItem)"
+          >
+            แก้ไข
+          </button>
+          <button
+            @click="deleteUnit(slideUnitItem)"
+            :class="!!slideUnitItem ? { red: true } : {}"
+            :disabled="!slideUnitItem"
+          >
+            ลบ
+          </button>
+        </template>
+        <template #left>
+          <h1
+            :style="selectUnitIndex > 0 ? { cursor: 'pointer' } : { cursor: 'not-allowed' }"
+            :class="selectUnitIndex > 0 ? { 'f-black': true } : { 'f-gray': true }"
+            @click="selectUnitIndex > 0 ? (selectUnitIndex -= 1) : (selectUnitIndex = 0)"
+          >
+            &lt;
+          </h1>
+        </template>
+        <template #right
+          ><h1
+            :style="
+              selectUnitIndex < unitData.length - 1 && selectUnitIndex >= 0
+                ? { cursor: 'pointer' }
+                : { cursor: 'not-allowed' }
+            "
+            :class="
+              selectUnitIndex < unitData.length - 1 && selectUnitIndex >= 0
+                ? { 'f-black': true }
+                : { 'f-gray': true }
+            "
+            @click="
+              selectUnitIndex < unitData.length - 1
+                ? (selectUnitIndex += 1)
+                : (selectUnitIndex = unitData.length - 1)
+            "
+          >
+            &gt;
+          </h1>
+        </template>
       </SlideCard>
     </template>
   </TwoColumnLayout>
@@ -85,12 +137,16 @@ export default defineComponent({
     const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const isEdit = ref(false)
     const unitApi = useUnitApi()
-    const selectUnit = ref<Unit>({ unitId: 51 })
-    const selectRow = computed(() => {
-      return {
-        data: selectUnit.value,
-        key: 'unitId'
-      }
+    const selectRow = ref<{ data: Unit | undefined; key: string }>({
+      data: undefined,
+      key: 'unitId'
+    })
+
+    let selectUnitIndex = ref<number>(-1)
+    const slideUnitItem = computed(() => {
+      return selectUnitIndex.value >= 0 && selectUnitIndex.value <= unitData.value.length - 1
+        ? unitData.value[selectUnitIndex.value]
+        : undefined
     })
     const columnsData: IColumn[] = [
       {
@@ -126,6 +182,7 @@ export default defineComponent({
           toast.error('ไม่สำเร็จ', 'ไม่สามารถลบหน่วยนับได้')
         }
         await getUnit()
+        selectUnitIndex.value = -1
         loader.setLoadingOff()
       }
     }
@@ -172,6 +229,8 @@ export default defineComponent({
       deleteUnit,
       closeDialog,
       unitData,
+      selectUnitIndex,
+      slideUnitItem,
       columnsData,
       option,
       unitForm,

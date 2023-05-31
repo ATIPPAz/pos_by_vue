@@ -1,20 +1,18 @@
 <template>
-  <div style="padding: 0px 0px">
-    <div class="flex-container">
-      <div class="flex-item" style="margin-top: 8px">
-        <slot name="left" />
-      </div>
-      <div class="flex-item center">
-        <div class="card-slide">
-          <slot name="head" />
-          <br />
-          <slot name="body" />
-          <br />
-          <slot name="footer" />
-        </div>
-      </div>
-      <div class="flex-item" style="margin-top: 8px"><slot name="right" /></div>
+  <div class="flex-container">
+    <div class="flex-item" style="margin-top: 8px; text-align: center">
+      <slot name="left" />
     </div>
+    <div class="flex-item center">
+      <div class="card-slide">
+        <slot name="head" />
+        <br />
+        <slot name="body" />
+        <div style="margin-top: 16px; text-align: center" />
+        <slot name="footer" />
+      </div>
+    </div>
+    <div class="flex-item" style="margin-top: 8px"><slot name="right" /></div>
   </div>
 </template>
 <script lang="ts">
@@ -26,7 +24,7 @@ export default defineComponent({})
 .card-slide {
   border-radius: 8px;
   border: 1px solid rgb(168, 168, 168);
-  padding: 12px;
+  padding: 16px;
 }
 .flex-container {
   display: flex;

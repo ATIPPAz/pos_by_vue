@@ -58,11 +58,11 @@ export default defineComponent({
 
   setup(props) {
     const open = ref(false)
-    const selectedIndex = ref<number | undefined>(undefined)
+    const selectedIndex = ref<number>(-1)
     let res: ((value: number | undefined | PromiseLike<number | undefined>) => void) | null
 
     const itemSelect = computed(() => {
-      return selectedIndex.value ? props.allItems[selectedIndex.value] : undefined
+      return selectedIndex.value >= 0 ? props.allItems[selectedIndex.value] : undefined
     })
     function selectItemInModal(itemIndex: number) {
       selectedIndex.value = itemIndex
@@ -75,7 +75,7 @@ export default defineComponent({
       })
     }
     function closeModal(itemId?: number) {
-      selectedIndex.value = undefined
+      selectedIndex.value = -1
       open.value = false
       if (res) {
         res(itemId)

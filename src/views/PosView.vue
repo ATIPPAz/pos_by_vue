@@ -108,11 +108,13 @@
         </table>
       </div>
       <div style="margin-top: 14px" class="j-end">
+        <button @click="receiptModal?.openModal()" class="blue">ตัวอย่าง</button>
         <button @click="saveReceipt" class="blue">บันทึก</button>
       </div>
       <ModalSelectItem :all-items="itemModal" ref="modalSelectItem" />
 
       <ConfirmModal ref="confirmDialog" />
+      <ReceiptModal ref="receiptModal" :receipt-data="receiptData" />
     </template>
   </MainFrame>
 </template>
@@ -128,12 +130,14 @@ import type { IColumn, TableOption } from '@/interface/dataTable'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import MainFrame from '@/components/layout/BasicLayout.vue'
 import { inject } from 'vue'
+import ReceiptModal from '@/components/modal/ReceiptModal.vue'
+
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { onMounted } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
-  components: { DataTable, ModalSelectItem, ConfirmModal, MainFrame },
+  components: { DataTable, ReceiptModal, ModalSelectItem, ConfirmModal, MainFrame },
 
   setup() {
     const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
@@ -143,6 +147,7 @@ export default defineComponent({
     const itemApi = useItemApi()
     const itemSelectIndex = ref(-1)
     const date = ref<string>()
+    const receiptModal = ref<InstanceType<typeof ReceiptModal>>()
     const modalSelectItem = ref<InstanceType<typeof ModalSelectItem>>()
     const modalOpen = ref(false)
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
@@ -376,6 +381,7 @@ export default defineComponent({
       saveReceipt,
       closeModal,
       modalSelectItem,
+      receiptModal,
       receiptDetailsData,
       selectItemModal,
       receiptData,

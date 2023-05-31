@@ -13,11 +13,11 @@ const router = createRouter({
       path: '',
       component: MainLayout,
       children: [
-        {
-          path: '/receipt/:receiptId',
-          name: 'receiptDetail',
-          component: ReceiptDetailView
-        },
+        // {
+        //   path: '/receipt/:receiptId',
+        //   name: 'receiptDetail',
+        //   component: ReceiptDetailView
+        // },
         {
           path: '/receipt',
           name: 'receipt',

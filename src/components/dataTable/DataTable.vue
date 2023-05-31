@@ -10,11 +10,13 @@
       </thead>
       <tbody>
         <tr
+          style="cursor: pointer"
+          @click="$emit('update:selectIndexRow', index)"
           v-for="(row, index) in dataTable"
           :key="index"
           :class="
-            selectRow?.data
-              ? selectRow?.data[selectRow.key] === row[selectRow?.key]
+            selectIndexRow >= 0
+              ? selectIndexRow === index
                 ? { 'f-blue': true }
                 : { 'f-black': true }
               : {}
@@ -35,11 +37,11 @@
           </slot>
         </tr>
 
-        <!-- <tr v-show="!hasSpecialRow && dataTable.length <= 0">
+        <tr v-show="dataTable.length <= 0">
           <th :colspan="column?.length ? column.length + 2 : 99">
             <div style="font-size: 48px; font-weight: bold; color: #adadad">No data</div>
           </th>
-        </tr> -->
+        </tr>
       </tbody>
     </table>
   </div>
@@ -66,8 +68,9 @@ export default defineComponent({
       type: Array as PropType<any[]>,
       default: () => []
     },
-    selectRow: {
-      type: Object as PropType<ISelectRow>
+    selectIndexRow: {
+      type: Number,
+      default: -1
     },
     option: {
       type: Object as PropType<TableOption>,
@@ -78,6 +81,11 @@ export default defineComponent({
           actionLabel: 'action'
         }
       }
+    }
+  },
+  emits: {
+    'update:selectIndexRow'(value: any) {
+      return true
     }
   },
   setup(props, ctx) {

@@ -14,6 +14,6 @@ export default defineComponent({})
 .grid-container {
   display: grid;
   grid-template-columns: auto auto;
-  column-gap: 14px;
+  column-gap: 32px;
 }
 </style>

@@ -25,23 +25,25 @@
       </DataTable>
     </template>
   </MainFrame>
+  <ReceiptModal ref="receiptModal" :receipt-data="receiptDetailData" />
 </template>
 
 <script lang="ts">
-import router from '@/router'
 import MainFrame from '@/components/layout/BasicLayout.vue'
 import DataTable from '@/components/dataTable/DataTable.vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { useReceiptApi } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
 import { ref, defineComponent, computed, onMounted, inject } from 'vue'
-import type { Receipt } from '@/interface/receipt'
+import ReceiptModal from '@/components/modal/ReceiptModal.vue'
+import type { Receipt, ReceiptForm } from '@/interface/receipt'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import { toastPluginSymbol } from '@/plugins/toast'
 
 export default defineComponent({
   components: {
     MainFrame,
+    ReceiptModal,
     DataTable
   },
   setup() {
@@ -50,6 +52,7 @@ export default defineComponent({
     const toast = inject(toastPluginSymbol)!
     const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
     const endDate = ref(formatDateForDisplay(new Date()))
+    const receiptModal = ref<InstanceType<typeof ReceiptModal>>()
     const columnsData = ref<IColumn[]>([
       {
         key: 'receiptCode',
@@ -63,6 +66,15 @@ export default defineComponent({
     })
     const _receipt = ref<Receipt[]>([])
     const receiptData = computed(() => _receipt.value)
+    const receiptDetailData = ref<ReceiptForm>({
+      receiptDate: '',
+      receiptdetails: [],
+      receiptGrandTotal: 0,
+      receiptSubTotal: 0,
+      receiptTotalBeforeDiscount: 0,
+      receiptTotalDiscount: 0,
+      receiptTradeDiscount: 0
+    })
     async function searchReceipt() {
       loader.setLoadingOn()
       await getReceipt()
@@ -90,8 +102,20 @@ export default defineComponent({
         return []
       }
     }
-    function openDetail(data: any) {
-      router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
+    async function openDetail(emitData: any) {
+      loader.setLoadingOn()
+      const { data, statusCode } = await receiptApi.getOneReceipt(emitData.receiptId)
+      if (statusCode === status.error) {
+        toast?.error('เกิดข้อผิดพลาด', 'เซิฟเวอร์มีปัญหา')
+      }
+      loader.setLoadingOff()
+      console.log(data)
+
+      receiptDetailData.value = data as ReceiptForm
+      console.log(receiptModal.value)
+
+      receiptModal.value?.openModal()
+      // router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
     }
     onMounted(async () => {
       loader.setLoadingOn()
@@ -103,8 +127,10 @@ export default defineComponent({
       option,
       searchReceipt,
       openDetail,
+      receiptDetailData,
       receiptData,
       endDate,
+      receiptModal,
       columnsData
     }
   }
