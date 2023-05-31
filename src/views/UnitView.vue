@@ -44,7 +44,7 @@
           <button @click="saveChange" class="blue">save change</button>
         </template>
       </Modal>
-      <ConfirmModal ref="confirmDialog" v-model:open="openConfirm" />
+      <ConfirmModal ref="confirmDialog" />
     </template>
   </MainFrame>
 </template>
@@ -55,10 +55,8 @@ import { statusCode as status } from '@/interface/api'
 import MainFrame from '@/components/layout/BasicLayout.vue'
 import Modal from '@/components/modal/ModalDialog.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
-
 import DataTable from '@/components/dataTable/DataTable.vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
-
 import type { Unit, UnitForm } from '@/interface/unit'
 import { useUnitApi } from '@/composables/api'
 import { loaderPluginSymbol } from '@/plugins/loading'
@@ -72,8 +70,7 @@ export default defineComponent({
     const unitForm = ref<UnitForm>({ unitName: '' })
     const loader = inject(loaderPluginSymbol)!
     const toast = inject(toastPluginSymbol)!
-    const confirmDialog = ref<any>(null)
-    const openConfirm = ref(false)
+    const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const isEdit = ref(false)
     const unitApi = useUnitApi()
     const columnsData: IColumn[] = [
@@ -101,7 +98,7 @@ export default defineComponent({
       open.value = true
     }
     async function deleteUnit(data: any) {
-      if (await confirmDialog.value.getConfirmResult()) {
+      if (await confirmDialog.value?.getConfirmResult()) {
         loader.setLoadingOn()
         const { statusCode } = await unitApi.deleteUnit(data.unitId)
         if (statusCode === status.deleteSuccess) {
@@ -159,7 +156,6 @@ export default defineComponent({
       option,
       unitForm,
       title,
-      openConfirm,
       open,
       confirmDialog
     }
