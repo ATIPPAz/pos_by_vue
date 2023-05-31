@@ -87,8 +87,7 @@ export default defineComponent({
     const toast = inject(toastPluginSymbol)!
     const unitApi = useUnitApi()
     const itemApi = useItemApi()
-    const confirmDialog = ref<any>(null)
-    const openConfirm = ref(false)
+    const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const columnData = ref<IColumn[]>([
       {
         key: 'itemCode',
@@ -147,10 +146,7 @@ export default defineComponent({
     }
 
     async function deleteItem(data: any) {
-      // openConfirm.value = trues
-      // console.log(openConfirm.value)
-
-      if (await confirmDialog.value.getConfirmResult()) {
+      if (await confirmDialog.value?.getConfirmResult()) {
         loader.setLoadingOn()
         const { statusCode } = await itemApi.deleteItem(data.itemId)
         if (statusCode === status.deleteSuccess) {
@@ -161,25 +157,21 @@ export default defineComponent({
         await getItemData()
       }
       loader.setLoadingOff()
-      // console.log(openConfirm.value)
-
-      // openConfirm.value = false
     }
     async function modalOpen(item: any = null) {
       loader.setLoadingOn()
       await getUnitData()
       if (item) {
         titleModal.value = 'แก้ไขสินค้า'
-        openModal.value = true
         itemForm.value = item
       } else {
         titleModal.value = 'เพิ่มสินค้า'
-        openModal.value = true
         itemForm.value.itemCode = ''
         itemForm.value.itemName = ''
         itemForm.value.itemPrice = 0
       }
       loader.setLoadingOff()
+      openModal.value = true
     }
 
     function closeDialog() {
@@ -219,7 +211,6 @@ export default defineComponent({
       itemForm: itemForm,
       unitSelect,
       confirmDialog,
-      openConfirm,
       modalOption
     }
   }
