@@ -24,12 +24,6 @@
             </td>
           </slot>
         </tr>
-
-        <!-- <tr v-show="!hasSpecialRow && dataTable.length <= 0">
-          <th :colspan="column?.length ? column.length + 2 : 99">
-            <div style="font-size: 48px; font-weight: bold; color: #adadad">No data</div>
-          </th>
-        </tr> -->
       </tbody>
     </table>
   </div>
@@ -88,7 +82,7 @@ export default defineComponent({
     const hasSpecialRow = computed(() => {
       return !!ctx.slots.specialRow
     })
-    onMounted(() => {})
+
     return {
       hasSpecialRow,
       dataTable,

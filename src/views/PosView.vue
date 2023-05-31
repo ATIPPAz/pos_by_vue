@@ -37,7 +37,7 @@
           />
         </template>
         <template #cell-itemDiscount="{ data }">
-          <input type="number" min="0" v-model="data.itemDiscount" />
+          {{ data.itemDiscount }}
         </template>
         <template #cell-itemAmount="{ data }">
           {{ data.itemAmount }}
@@ -134,7 +134,6 @@ import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
   components: { DataTable, ModalSelectItem, ConfirmModal, MainFrame },
-
   setup() {
     const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const loader = inject(loaderPluginSymbol)
@@ -171,7 +170,8 @@ export default defineComponent({
       receiptdetails: []
     })
     async function getPrefix() {
-      return (await receiptApi.getPrefix()).data
+      const { data } = await receiptApi.getPrefix()
+      return data
     }
     async function setDefaultReceipt() {
       const prefix = await getPrefix()
@@ -191,10 +191,11 @@ export default defineComponent({
       return `${date[2]}-${date[1]}-${date[0]}`
     }
     async function openModal(index: number) {
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
       const res = await itemApi.getItem()
       itemModal.value = res.data ?? []
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
       if (index === receiptDetailsData.value.length - 1) {
         const itemId = await modalSelectItem.value?.getItemSelectResult()
         if (itemId) {
@@ -264,7 +265,7 @@ export default defineComponent({
         selectItemModal.value = item
       }
     }
-    async function removeItemInReceipt(data: any) {
+    async function removeItemInReceipt(data: { index: number }) {
       if (await confirmDialog.value?.getConfirmResult()) {
         if (receiptData.value.receiptdetails) {
           receiptData.value.receiptdetails.splice(data.index, 1)
@@ -286,7 +287,8 @@ export default defineComponent({
         receiptData.value.receiptDate = formatDateForBackend(receiptData.value.receiptDate)
       }
       delete receiptData.value.receiptCode
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
       const { statusCode } = await receiptApi.createReceipt({
         ...receiptData.value,
         receiptDate: receiptData.value.receiptDate ?? '',
@@ -302,15 +304,15 @@ export default defineComponent({
         toast?.error('ไม่สำเร็จ', 'ไม่สามารถสร้างรายการซื้อสินค้าได้')
       }
       await setDefaultReceipt()
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
     }
 
     onMounted(async () => {
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
       await setDefaultReceipt()
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
     })
-    ;(async () => {})()
 
     const receiptDetailsData = computed(() => {
       const res = receiptData.value.receiptdetails.slice()
@@ -367,6 +369,8 @@ export default defineComponent({
         }
       }
     )
+
+    // const receiptGrandTotal =
 
     return {
       removeItemInReceipt,

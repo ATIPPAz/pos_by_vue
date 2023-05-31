@@ -64,9 +64,10 @@ export default defineComponent({
     const _receipt = ref<Receipt[]>([])
     const receiptData = computed(() => _receipt.value)
     async function searchReceipt() {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getReceipt()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     }
     function getPreviousDay(date = new Date()) {
       const previous = new Date(date.getTime())
@@ -90,13 +91,14 @@ export default defineComponent({
         return []
       }
     }
-    function openDetail(data: any) {
+    function openDetail(data: Receipt) {
       router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
     }
     onMounted(async () => {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getReceipt()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     })
     return {
       startDate,

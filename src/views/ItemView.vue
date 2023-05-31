@@ -114,22 +114,25 @@ export default defineComponent({
     const openModal = ref(false)
     const titleModal = ref('เพิ่มสินค้า')
     async function saveChange() {
-      let statusCode = 0
+      let _statusCode = 0
       if (!itemForm.value.unitId) {
         toast.error('ไม่สำเร็จ', 'กรุณาเลือกหน่วยนับ')
         return
       }
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       const itemApiForm: ItemApiRequest = {
         ...itemForm.value,
         unitId: itemForm.value.unitId!
       }
       if (titleModal.value === 'เพิ่มสินค้า') {
-        statusCode = (await itemApi.createItem(itemApiForm)).statusCode
+        const { statusCode } = await itemApi.createItem(itemApiForm)
+        _statusCode = statusCode
       } else {
-        statusCode = (await itemApi.updateItem(itemApiForm)).statusCode
+        const { statusCode } = await itemApi.updateItem(itemApiForm)
+        _statusCode = statusCode
       }
-      if (statusCode === status.createSuccess || statusCode === status.updateSuccess) {
+      if (_statusCode === status.createSuccess || _statusCode === status.updateSuccess) {
         toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
       } else {
         toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
@@ -142,35 +145,37 @@ export default defineComponent({
         unitId: undefined
       }
       await getItemData()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     }
 
-    async function deleteItem(data: any) {
+    async function deleteItem(data: Item) {
       if (await confirmDialog.value?.getConfirmResult()) {
-        loader.setLoadingOn()
-        const { statusCode } = await itemApi.deleteItem(data.itemId)
+        const idloader = crypto.randomUUID()
+        loader.setLoadingOn(idloader)
+        const { statusCode } = await itemApi.deleteItem(data.itemId!)
         if (statusCode === status.deleteSuccess) {
           toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
         } else {
           toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
         }
         await getItemData()
+        loader.setLoadingOff(idloader)
       }
-      loader.setLoadingOff()
     }
-    async function modalOpen(item: any = null) {
-      loader.setLoadingOn()
+    async function modalOpen(item: ItemForm | null = null) {
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getUnitData()
       if (item) {
         titleModal.value = 'แก้ไขสินค้า'
-        itemForm.value = item
+        itemForm.value = item!
       } else {
         titleModal.value = 'เพิ่มสินค้า'
         itemForm.value.itemCode = ''
         itemForm.value.itemName = ''
         itemForm.value.itemPrice = 0
       }
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
       openModal.value = true
     }
 
@@ -184,16 +189,19 @@ export default defineComponent({
       }
     }
     async function getItemData() {
-      itemData.value = (await itemApi.getItem()).data ?? []
+      const { data } = await itemApi.getItem()
+      itemData.value = data
     }
     async function getUnitData() {
-      unitDropdown.value = (await unitApi.getUnit()).data ?? []
+      const { data } = await unitApi.getUnit()
+      unitDropdown.value = data
       itemForm.value.unitId = unitDropdown.value[0].unitId
     }
     onMounted(async () => {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getItemData()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     })
 
     return {

@@ -1,7 +1,7 @@
 import { getRequest, createRequest } from './fetchHelper'
 // import type { Receipt } from '@/interface/receipt'
 import { endpoint } from './endpoint'
-import { type Api } from '@/interface/api/response.Interface'
+import { type Api } from '@/interface/api/response'
 
 export interface ReceiptRequest {
   receiptDate: string
