@@ -1,12 +1,9 @@
 <template>
-  <!-- <HomeView></HomeView> -->
+  <NavigationBar />
+  <br />
   <RouterView />
 </template>
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
 import { RouterView } from 'vue-router'
-// import HomeView from '@/views/HomeView.vue'
-export default defineComponent({
-  components: { RouterView }
-})
+import NavigationBar from '@/components/navigation/NavigationBar.vue'
 </script>

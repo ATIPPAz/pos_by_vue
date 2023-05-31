@@ -9,7 +9,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(row, index) in dataTable" :key="index">
+        <tr
+          v-for="(row, index) in dataTable"
+          :key="index"
+          :class="
+            selectRow?.data
+              ? selectRow?.data[selectRow.key] === row[selectRow?.key]
+                ? { 'f-blue': true }
+                : { 'f-black': true }
+              : {}
+          "
+        >
           <slot :name="`row-${index}`">
             <td v-for="col in columnInfos" :key="col.key">
               <template v-if="col.key === idRowNumber">
@@ -39,7 +49,10 @@
 import { computed, onMounted, defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import type { IColumn, TableOption } from '@/interface/dataTable.js'
-
+interface ISelectRow<T = any> {
+  key: string
+  data: T
+}
 const idRowNumber = 'idRowNumber'
 const idRowAction = 'idRowAction'
 export default defineComponent({
@@ -52,6 +65,9 @@ export default defineComponent({
     data: {
       type: Array as PropType<any[]>,
       default: () => []
+    },
+    selectRow: {
+      type: Object as PropType<ISelectRow>
     },
     option: {
       type: Object as PropType<TableOption>,

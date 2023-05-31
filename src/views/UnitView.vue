@@ -1,5 +1,5 @@
 <template>
-  <MainFrame @click:backBtn="$router.push({ name: 'home' })">
+  <TwoColumnLayout>
     <template #title>
       <h1>
         <span style="color: purple">ตั้</span>
@@ -14,45 +14,57 @@
         <span style="color: pink">บ</span>
       </h1>
     </template>
-    <template #content>
-      <div class="j-end" style="margin-bottom: 14px">
-        <button id="addButton" class="blue" @click="modalOpen(undefined)">เพิ่ม</button>
+    <template #left>
+      <div>
+        <div class="j-end" style="margin-bottom: 14px">
+          <button id="addButton" class="blue" @click="modalOpen(undefined)">เพิ่ม</button>
+        </div>
+        <DataTable :data="unitData" :column="columnsData" :option="option" :selectRow="selectRow">
+          <template #cell-unitName="slotProp">
+            {{ slotProp.data.unitName }}
+          </template>
+          <template #cell-idRowAction="data">
+            <div>
+              <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">
+                edit
+              </button>
+              <button @click="deleteUnit(data.data)" class="red">delete</button>
+            </div>
+          </template>
+        </DataTable>
       </div>
-
-      <DataTable :data="unitData" :column="columnsData" :option="option">
-        <template #cell-unitName="slotProp">{{ slotProp.data.unitName }}</template>
-        <template #cell-idRowAction="data">
-          <div>
-            <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">
-              edit
-            </button>
-            <button @click="deleteUnit(data.data)" class="red">delete</button>
-          </div>
-        </template>
-      </DataTable>
-
-      <Modal v-model:open="open">
-        <template #header>
-          <p class="modal-title">{{ title }}</p>
-        </template>
-        <template #body>
-          ชื่อหน่วย:<br />
-          <input type="text" v-model="unitForm.unitName" />
-        </template>
-        <template #footer>
-          <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
-          <button @click="saveChange" class="blue">save change</button>
-        </template>
-      </Modal>
-      <ConfirmModal ref="confirmDialog" />
     </template>
-  </MainFrame>
+    <template #right>
+      <SlideCard style="width: 100%">
+        <template #head>test</template>
+        <template #body>testdasd.sa;d.</template>
+        <template #footer>daspldps</template>
+        <template #left> <h1>&lt;</h1> </template>
+        <template #right><h1>&gt;</h1> </template>
+      </SlideCard>
+    </template>
+  </TwoColumnLayout>
+  <Modal v-model:open="open">
+    <template #header>
+      <p class="modal-title">{{ title }}</p>
+    </template>
+    <template #body>
+      ชื่อหน่วย:<br />
+      <input type="text" v-model="unitForm.unitName" />
+    </template>
+    <template #footer>
+      <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
+      <button @click="saveChange" class="blue">save change</button>
+    </template>
+  </Modal>
+  <ConfirmModal ref="confirmDialog" />
 </template>
 
 <script lang="ts">
+import TwoColumnLayout from '@/components/layout/TwoColumnLayout.vue'
+import SlideCard from '@/components/card/SlideCard.vue'
 import { onMounted, ref, inject, defineComponent } from 'vue'
 import { statusCode as status } from '@/interface/api'
-import MainFrame from '@/components/layout/BasicLayout.vue'
 import Modal from '@/components/modal/ModalDialog.vue'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import DataTable from '@/components/dataTable/DataTable.vue'
@@ -63,7 +75,7 @@ import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
 import { computed } from 'vue'
 export default defineComponent({
-  components: { DataTable, Modal, MainFrame, ConfirmModal },
+  components: { DataTable, Modal, ConfirmModal, SlideCard, TwoColumnLayout },
   setup() {
     const open = ref(false)
     const unitData = ref<Unit[]>([])
@@ -73,6 +85,13 @@ export default defineComponent({
     const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const isEdit = ref(false)
     const unitApi = useUnitApi()
+    const selectUnit = ref<Unit>({ unitId: 51 })
+    const selectRow = computed(() => {
+      return {
+        data: selectUnit.value,
+        key: 'unitId'
+      }
+    })
     const columnsData: IColumn[] = [
       {
         key: 'unitName',
@@ -148,6 +167,7 @@ export default defineComponent({
     })
     return {
       saveChange,
+      selectRow,
       modalOpen,
       deleteUnit,
       closeDialog,
