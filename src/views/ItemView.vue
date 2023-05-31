@@ -5,7 +5,7 @@
       <div class="j-end" style="margin-bottom: 14px">
         <button class="blue" @click="modalOpen()">เพิ่ม</button>
       </div>
-      <DataTable :column="header" :option="option" :data="itemData">
+      <DataTable :column="columnData" :option="option" :data="itemData">
         <template #cell-itemCode="data">{{ data.data.itemCode }} </template>
         <template #cell-itemName="data">{{ data.data.itemName }} </template>
         <template #cell-unitName="data">{{ data.data.unitName }} </template>
@@ -89,7 +89,7 @@ export default defineComponent({
     const itemApi = useItemApi()
     const confirmDialog = ref<any>(null)
     const openConfirm = ref(false)
-    const header = ref<IColumn[]>([
+    const columnData = ref<IColumn[]>([
       {
         key: 'itemCode',
         label: 'รหัสสินค้า'
@@ -205,7 +205,7 @@ export default defineComponent({
     })
 
     return {
-      header,
+      columnData,
       option,
       itemData,
       openModal,

@@ -119,7 +119,6 @@
 
 <script lang="ts">
 import DataTable from '@/components/dataTable/DataTable.vue'
-import ModalDialog from '@/components/modal/ModalDialog.vue'
 import ModalSelectItem from '@/components/modal/ModalSelectItem.vue'
 import { useReceiptApi, useItemApi } from '@/composables/api'
 import { ref, computed, watch, defineComponent } from 'vue'
@@ -292,7 +291,15 @@ export default defineComponent({
       }
       delete receiptData.value.receiptCode
       loader?.setLoadingOn()
-      const { statusCode } = await receiptApi.createReceipt(receiptData.value)
+      const { statusCode } = await receiptApi.createReceipt({
+        ...receiptData.value,
+        receiptDate: receiptData.value.receiptDate ?? '',
+        receiptGrandTotal: receiptData.value.receiptGrandTotal ?? 0,
+        receiptTotalBeforeDiscount: receiptData.value.receiptTotalBeforeDiscount ?? 0,
+        receiptTotalDiscount: receiptData.value.receiptTotalDiscount ?? 0,
+        receiptSubTotal: receiptData.value.receiptSubTotal ?? 0,
+        receiptTradeDiscount: receiptData.value.receiptTradeDiscount ?? 0
+      })
       if (statusCode === status.createSuccess) {
         toast?.success('สำเร็จ', 'สร้างสินค้ารายการสั่งซื้อสำเร็จ')
       } else {
