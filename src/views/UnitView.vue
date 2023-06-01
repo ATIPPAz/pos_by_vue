@@ -47,11 +47,7 @@
           >
             แก้ไข
           </button>
-          <button
-            @click="deleteUnit(slideUnitItem)"
-            :class="!!slideUnitItem ? { red: true } : {}"
-            :disabled="!slideUnitItem"
-          >
+          <button @click="deleteUnit(slideUnitItem)" class="red" :disabled="!slideUnitItem">
             ลบ
           </button>
         </template>
@@ -104,7 +100,7 @@
   <ConfirmModal ref="confirmDialog" />
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { statusCode as status } from '@/interface/api'
 import { onMounted, ref, inject } from 'vue'
@@ -143,7 +139,7 @@ const option: TableOption = {
   actionLabel: 'ดำเนินการ',
   rowNumber: true
 }
-let selectUnitIndex = ref<number>(-1)
+const selectUnitIndex = ref<number>(-1)
 
 function modalOpen(data: Unit | null = null) {
   if (data) {
@@ -221,3 +217,14 @@ onMounted(async () => {
   loader.setLoadingOff(idloader)
 })
 </script>
+<!-- <style lang="css">
+.red {
+  background-color: #ff0000;
+  color: white;
+}
+
+.red:disabled {
+  background-color: #4a0000;
+  color: #4a0000;
+}
+</style> -->

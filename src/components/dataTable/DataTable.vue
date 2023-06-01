@@ -81,11 +81,9 @@ const props = defineProps({
     }
   }
 })
-const emit = defineEmits({
-  'update:selectIndexRow'(value: any) {
-    return true
-  }
-})
+const emit = defineEmits<{
+  (e: 'update:selectIndexRow', value: any): void
+}>()
 
 const columnInfos = computed(() => {
   const columnInfos: IColumn[] = []

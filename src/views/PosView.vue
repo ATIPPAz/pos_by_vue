@@ -9,7 +9,7 @@
   </div>
   <DataTable :column="columnsData" :data="receiptDetailsData" :option="option">
     <template #cell-itemCode="{ index, data }">
-      <button class="gray" @click="openModal(index)">
+      <button class="gray" style="width: 100%; text-align: center" @click="openModal(index)">
         {{ data.itemCode }}
       </button>
     </template>
@@ -47,7 +47,13 @@
     <template v-slot:[`row-${receiptDetailsData.length-1}`]>
       <td style="padding: 16px">{{ receiptDetailsData.length }}</td>
       <td style="padding: 16px">
-        <button @click="openModal(receiptDetailsData.length - 1)" class="blue">เลือกสินค้า</button>
+        <button
+          style="width: 100%; text-align: center"
+          @click="openModal(receiptDetailsData.length - 1)"
+          class="blue"
+        >
+          เลือกสินค้า
+        </button>
       </td>
       <td style="padding: 16px"></td>
       <td style="padding: 16px"></td>
@@ -76,7 +82,14 @@
         </tr>
         <tr>
           <td class="t-start">ส่วนลดการค้า</td>
-          <td><input type="number" v-model="receiptTradeDiscount" min="0" /><br /></td>
+          <td>
+            <input
+              type="number"
+              v-model="receiptTradeDiscount"
+              min="0"
+              :disabled="!isValid"
+            /><br />
+          </td>
         </tr>
         <tr>
           <td class="t-start">Grand total</td>
@@ -162,10 +175,9 @@ const receiptTotalDiscount = computed(() => {
 })
 const receiptTotalBeforeDiscount = computed(() => {
   let sum = 0
-
-  receiptDetailsData.value.forEach((e) => {
-    sum += e.itemPrice * e.itemQty
-  })
+  for (let index = 0; index < receiptDetail.value.length; index++) {
+    sum += calAmount(index)
+  }
   return sum
 })
 const receiptSubTotal = computed(() => {
