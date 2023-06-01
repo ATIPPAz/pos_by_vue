@@ -333,13 +333,6 @@ export default defineComponent({
       return (row.itemPrice * row.itemQty * row.itemDiscountPercent) / 100
     }
     const receiptDetailsData = computed(() => {
-      // receiptDetail.value.forEach((e) => {
-      //   // const sum = e.itemPrice * e.itemQty
-      //   // const discount = sum * (e.itemDiscountPercent / 100)
-      //   // const total = sum - discount
-      //   // e.itemDiscount = discount
-      //   // e.itemAmount = total
-      // })
       const res = receiptDetail.value.slice()
       res.push({
         unitName: '',

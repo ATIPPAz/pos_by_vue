@@ -79,12 +79,8 @@ export default defineComponent({
     const hasActionSlot = computed(() => {
       return !!ctx.slots['cell-idRowAction']
     })
-    const hasSpecialRow = computed(() => {
-      return !!ctx.slots.specialRow
-    })
 
     return {
-      hasSpecialRow,
       dataTable,
       idRowAction,
       idRowNumber,
