@@ -5,7 +5,7 @@
     </option>
   </select>
 </template>
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { Option } from '@/interface/dropdown'
 import { computed, type PropType } from 'vue'
 

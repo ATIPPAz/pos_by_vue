@@ -11,7 +11,7 @@
     <div class="toast-content">{{ toastState.content }}</div>
   </div>
 </template>
-<script lang="ts" setup>
+<script setup lang="ts">
 import { inject } from 'vue'
 import { toastPluginSymbol } from '@/plugins/toast'
 const toast = inject(toastPluginSymbol)!

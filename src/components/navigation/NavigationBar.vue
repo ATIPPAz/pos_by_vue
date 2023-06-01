@@ -10,7 +10,7 @@
     </div>
   </div>
 </template>
-<script lang="ts" setup>
+<script setup lang="ts">
 import { CardMenu } from '@/components/card'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'

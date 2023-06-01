@@ -24,7 +24,7 @@
   <ReceiptModal ref="receiptModal" :receipt-data="receiptDetailData" />
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { statusCode as status } from '@/interface/api'
 import { useReceiptApi } from '@/composables/api'
 import { loaderPluginSymbol } from '@/plugins/loading'

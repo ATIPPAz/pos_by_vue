@@ -72,7 +72,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { DataTable } from '@/components/dataTable'
 import { ref } from 'vue'
 import type { ReceiptForm } from '@/interface/receipt'

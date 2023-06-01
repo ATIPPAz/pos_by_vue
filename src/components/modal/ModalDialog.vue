@@ -25,7 +25,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import type { PropType } from 'vue'
 import { computed } from 'vue'
 import type { ModalOption } from '@/interface/modal'

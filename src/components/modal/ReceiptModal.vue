@@ -11,12 +11,13 @@
   </ModalDialog>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ModalDialog } from '@/components/modal'
 import { ref, type PropType } from 'vue'
 import { ReceiptViewDetail } from '@/components/receiptView'
 import type { ModalOption } from '@/interface/modal'
 import type { ReceiptForm } from '@/interface/receipt'
+
 const props = defineProps({
   receiptData: {
     type: Object as PropType<ReceiptForm>,

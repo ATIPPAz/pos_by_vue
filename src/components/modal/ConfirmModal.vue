@@ -11,7 +11,7 @@
   </ModalDialog>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ModalDialog } from '@/components/modal'
 import { ref } from 'vue'
 import type { ModalOption } from '@/interface/modal.js'

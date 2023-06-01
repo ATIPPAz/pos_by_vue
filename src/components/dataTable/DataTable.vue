@@ -46,7 +46,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import type { PropType } from 'vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
@@ -81,6 +81,7 @@ const props = defineProps({
     }
   }
 })
+
 const emit = defineEmits<{
   (e: 'update:selectIndexRow', value: any): void
 }>()
@@ -102,6 +103,7 @@ const columnInfos = computed(() => {
 const dataTable = computed(() => {
   return props.data
 })
+
 const hasActionSlot = computed(() => {
   return !!slots['cell-idRowAction']
 })

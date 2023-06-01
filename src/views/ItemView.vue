@@ -47,7 +47,7 @@
   <ConfirmModal ref="confirmDialog" />
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ref, onMounted, inject, computed } from 'vue'
 import { ModalDialog } from '@/components/modal'
 import { InputDropdown } from '@/components/input'

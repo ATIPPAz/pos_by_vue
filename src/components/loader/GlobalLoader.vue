@@ -3,7 +3,7 @@
     <div class="loader"></div>
   </div>
 </template>
-<script lang="ts" setup>
+<script setup lang="ts">
 import { inject } from 'vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 const loader = inject(loaderPluginSymbol)!

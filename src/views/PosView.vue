@@ -130,7 +130,7 @@
   <ReceiptModal ref="receiptModal" :receipt-data="receiptData" />
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { DataTable } from '@/components/dataTable'
 import { ModalSelectItem } from '@/components/modal'
 import { useReceiptApi, useItemApi } from '@/composables/api'
