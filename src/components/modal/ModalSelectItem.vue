@@ -93,3 +93,11 @@ export default defineComponent({
   }
 })
 </script>
+<style scoped>
+.select {
+  color: rgb(0, 71, 224);
+}
+li {
+  margin: 8px 0px;
+}
+</style>
