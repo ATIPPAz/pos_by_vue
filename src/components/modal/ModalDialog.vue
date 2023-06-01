@@ -28,7 +28,7 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
 import { computed } from 'vue'
-import type { ModalOption } from '@/interface/modal.js'
+import type { ModalOption } from '@/interface/modal'
 const props = defineProps({
   open: {
     type: Boolean,

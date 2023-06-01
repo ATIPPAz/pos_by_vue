@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts" setup>
-import DataTable from '@/components/dataTable/DataTable.vue'
+import { DataTable } from '@/components/dataTable'
 import { ref } from 'vue'
 import type { ReceiptForm } from '@/interface/receipt'
 import type { IColumn } from '@/interface/dataTable'

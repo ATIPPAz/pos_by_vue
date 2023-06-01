@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, defineComponent } from 'vue'
+import { computed } from 'vue'
 import type { PropType } from 'vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import { useSlots } from 'vue'

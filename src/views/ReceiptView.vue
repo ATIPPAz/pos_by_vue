@@ -1,30 +1,26 @@
 <template>
-  <MainFrame @click:backBtn="$router.push({ name: 'home' })">
-    <template #title> <h1>ดูใบเสร็จรับเงิน</h1> </template>
-    <template #content>
-      <div style="margin-bottom: 14px">
-        <label for="startDate">วันที่เริ่มต้น:</label>
-        <input type="date" v-model="startDate" style="margin: 0px 8px" />
-        <label for="endDate"> วันสิ้นสุด:</label>
-        <input type="date" v-model="endDate" style="margin: 0px 8px" />
-        <button id="searchButton" @click="searchReceipt" class="blue">ค้นหา</button>
-      </div>
-      <DataTable :column="columnsData" :data="receiptData" :option="option">
-        <template #cell-receiptCode="{ data }">
-          {{ data.receiptCode }}
-        </template>
-        <template #cell-receiptDate="{ data }">
-          {{ data.receiptDate }}
-        </template>
-        <template #cell-receiptGrandTotal="{ data }">
-          {{ data.receiptGrandTotal }}
-        </template>
-        <template #cell-idRowAction="{ data }">
-          <button @click="openDetail(data)" class="blue">ดูรายละเอียด</button>
-        </template>
-      </DataTable>
+  <h1>ดูใบเสร็จรับเงิน</h1>
+  <div style="margin-bottom: 14px">
+    <label for="startDate">วันที่เริ่มต้น:</label>
+    <input type="date" v-model="startDate" style="margin: 0px 8px" />
+    <label for="endDate"> วันสิ้นสุด:</label>
+    <input type="date" v-model="endDate" style="margin: 0px 8px" />
+    <button id="searchButton" @click="searchReceipt" class="blue">ค้นหา</button>
+  </div>
+  <DataTable :column="columnsData" :data="receiptData" :option="option">
+    <template #cell-receiptCode="{ data }">
+      {{ data.receiptCode }}
     </template>
-  </MainFrame>
+    <template #cell-receiptDate="{ data }">
+      {{ data.receiptDate }}
+    </template>
+    <template #cell-receiptGrandTotal="{ data }">
+      {{ data.receiptGrandTotal }}
+    </template>
+    <template #cell-idRowAction="{ data }">
+      <button @click="openDetail(data)" class="blue">ดูรายละเอียด</button>
+    </template>
+  </DataTable>
   <ReceiptModal ref="receiptModal" :receipt-data="receiptDetailData" />
 </template>
 
@@ -38,9 +34,8 @@ import { ref, computed, onMounted, inject } from 'vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import type { Receipt, ReceiptForm } from '@/interface/receipt'
 
-import DataTable from '@/components/dataTable/DataTable.vue'
-import MainFrame from '@/components/layout/BasicLayout.vue'
-import ReceiptModal from '@/components/modal/ReceiptModal.vue'
+import { DataTable } from '@/components/dataTable'
+import { ReceiptModal } from '@/components/modal'
 
 const receiptApi = useReceiptApi()
 const loader = inject(loaderPluginSymbol)!

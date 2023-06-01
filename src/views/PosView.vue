@@ -118,16 +118,16 @@
 </template>
 
 <script lang="ts" setup>
-import DataTable from '@/components/dataTable/DataTable.vue'
-import ModalSelectItem from '@/components/modal/ModalSelectItem.vue'
+import { DataTable } from '@/components/dataTable'
+import { ModalSelectItem } from '@/components/modal'
 import { useReceiptApi, useItemApi } from '@/composables/api'
 import { ref, computed } from 'vue'
 import type { Item } from '@/interface/item'
 import type { ReceiptDetail } from '@/interface/receipt'
 import type { IColumn, TableOption } from '@/interface/dataTable'
-import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import { ConfirmModal } from '@/components/modal'
 import { inject } from 'vue'
-import ReceiptModal from '@/components/modal/ReceiptModal.vue'
+import { ReceiptModal } from '@/components/modal'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { onMounted } from 'vue'
 import { statusCode as status } from '@/interface/api'
@@ -138,13 +138,13 @@ const loader = inject(loaderPluginSymbol)
 const toast = inject(toastPluginSymbol)
 const receiptApi = useReceiptApi()
 const itemApi = useItemApi()
-const itemSelectIndex = ref(-1)
+
 const receiptModal = ref<InstanceType<typeof ReceiptModal>>()
 const modalSelectItem = ref<InstanceType<typeof ModalSelectItem>>()
-const modalOpen = ref(false)
+
 const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
 const itemModal = ref<Item[]>([])
-const selectItemModal = ref<Item | null>(null)
+
 const receiptDetail = ref<ReceiptDetail[]>([])
 const receiptCode = ref('')
 const receiptDate = ref(formatDateForDisplay(new Date()))

@@ -88,7 +88,7 @@
       </SlideCard>
     </template>
   </TwoColumnLayout>
-  <Modal v-model:open="open">
+  <ModalDialog v-model:open="open">
     <template #header>
       <p class="modal-title">{{ title }}</p>
     </template>
@@ -100,7 +100,7 @@
       <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
       <button @click="saveChange" class="blue">save change</button>
     </template>
-  </Modal>
+  </ModalDialog>
   <ConfirmModal ref="confirmDialog" />
 </template>
 
@@ -115,11 +115,11 @@ import { toastPluginSymbol } from '@/plugins/toast'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import type { Unit, UnitForm } from '@/interface/unit'
 
-import TwoColumnLayout from '@/components/layout/TwoColumnLayout.vue'
-import SlideCard from '@/components/card/SlideCard.vue'
-import Modal from '@/components/modal/ModalDialog.vue'
-import ConfirmModal from '@/components/modal/ConfirmModal.vue'
-import DataTable from '@/components/dataTable/DataTable.vue'
+import { TwoColumnLayout } from '@/components/layout'
+import { SlideCard } from '@/components/card'
+import { ModalDialog } from '@/components/modal'
+import { ConfirmModal } from '@/components/modal'
+import { DataTable } from '@/components/dataTable'
 
 const open = ref(false)
 const unitData = ref<Unit[]>([])

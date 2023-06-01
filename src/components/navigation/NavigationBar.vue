@@ -1,17 +1,17 @@
 <template>
   <div class="d-flex" style="justify-content: space-around">
     <div v-for="(menu, index) in menus" :key="index">
-      <Card
+      <CardMenu
         @click="cardClick(menu)"
         style="width: 225px; text-align: center; text-decoration: underline"
       >
         {{ menu.label }}
-      </Card>
+      </CardMenu>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import Card from '@/components/card/CardMenu.vue'
+import { CardMenu } from '@/components/card'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { inject } from 'vue'

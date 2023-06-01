@@ -15,11 +15,7 @@
     <div class="flex-item" style="margin-top: 8px"><slot name="right" /></div>
   </div>
 </template>
-<script lang="ts">
-import { defineComponent } from 'vue'
 
-export default defineComponent({})
-</script>
 <style scoped>
 .card-slide {
   border-radius: 8px;

@@ -40,7 +40,7 @@
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue'
-import ModalDialog from '@/components/modal/ModalDialog.vue'
+import { ModalDialog } from '@/components/modal'
 
 import type { PropType } from 'vue'
 import type { Item } from '@/interface/item'

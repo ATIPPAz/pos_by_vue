@@ -5,5 +5,5 @@
 </template>
 <script lang="ts" setup>
 import { RouterView } from 'vue-router'
-import NavigationBar from '@/components/navigation/NavigationBar.vue'
+import { NavigationBar } from '@/components/navigation'
 </script>

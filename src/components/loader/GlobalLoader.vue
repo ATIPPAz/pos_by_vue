@@ -4,7 +4,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, defineComponent, watch, inject } from 'vue'
+import { inject } from 'vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 const loader = inject(loaderPluginSymbol)!
 const loadingState = loader.loadingState

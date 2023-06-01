@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import ModalDialog from '@/components/modal/ModalDialog.vue'
+import { ModalDialog } from '@/components/modal'
 import { ref } from 'vue'
 import type { ModalOption } from '@/interface/modal.js'
 let res: ((value: boolean | PromiseLike<boolean>) => void) | null

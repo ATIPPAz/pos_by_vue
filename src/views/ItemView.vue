@@ -1,74 +1,67 @@
 <template>
-  <MainFrame @click:backBtn="$router.push({ name: 'home' })">
-    <template #title> <h1>ตั้งค่าสินค้า</h1></template>
-    <template #content>
-      <div class="j-end" style="margin-bottom: 14px">
-        <button class="blue" @click="modalOpen()">เพิ่ม</button>
+  <h1>ตั้งค่าสินค้า</h1>
+  <div class="j-end" style="margin-bottom: 14px">
+    <button class="blue" @click="modalOpen()">เพิ่ม</button>
+  </div>
+  <DataTable :column="columnData" :option="option" :data="itemData">
+    <template #cell-itemCode="data">{{ data.data.itemCode }} </template>
+    <template #cell-itemName="data">{{ data.data.itemName }} </template>
+    <template #cell-unitName="data">{{ data.data.unitName }} </template>
+    <template #cell-itemPrice="data">{{ data.data.itemPrice }} </template>
+    <template #cell-idRowAction="data">
+      <div>
+        <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">edit</button>
+        <button @click="deleteItem(data.data)" class="red">delete</button>
       </div>
-      <DataTable :column="columnData" :option="option" :data="itemData">
-        <template #cell-itemCode="data">{{ data.data.itemCode }} </template>
-        <template #cell-itemName="data">{{ data.data.itemName }} </template>
-        <template #cell-unitName="data">{{ data.data.unitName }} </template>
-        <template #cell-itemPrice="data">{{ data.data.itemPrice }} </template>
-        <template #cell-idRowAction="data">
-          <div>
-            <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">
-              edit
-            </button>
-            <button @click="deleteItem(data.data)" class="red">delete</button>
-          </div>
-        </template>
-      </DataTable>
-      <Modal v-model:open="openModal" :option="modalOption">
-        <template #header>
-          <p class="modal-title">{{ titleModal }}</p>
-        </template>
-        <template #body>
-          <div class="item-grid">
-            <div class="item">
-              รหัสสินค้า: <br />
-              <input type="text" v-model="itemForm.itemCode" />
-            </div>
-            <div class="item">
-              ชื่อสินค้า: <br />
-              <input type="text" v-model="itemForm.itemName" />
-            </div>
-            <div class="item">
-              ราคา: <br />
-              <input type="number" v-model="itemForm.itemPrice" min="0" step="1" />
-            </div>
-            <div class="item">
-              หน่วย: <br />
-              <InputDropdown v-model="itemForm.unitId" :options="unitDropdownOption" />
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
-          <button @click="saveChange" class="blue">save change</button>
-        </template>
-      </Modal>
-      <ConfirmModal ref="confirmDialog" />
     </template>
-  </MainFrame>
+  </DataTable>
+  <ModalDialog v-model:open="openModal" :option="modalOption">
+    <template #header>
+      <p class="modal-title">{{ titleModal }}</p>
+    </template>
+    <template #body>
+      <div class="item-grid">
+        <div class="item">
+          รหัสสินค้า: <br />
+          <input type="text" v-model="itemForm.itemCode" />
+        </div>
+        <div class="item">
+          ชื่อสินค้า: <br />
+          <input type="text" v-model="itemForm.itemName" />
+        </div>
+        <div class="item">
+          ราคา: <br />
+          <input type="number" v-model="itemForm.itemPrice" min="0" step="1" />
+        </div>
+        <div class="item">
+          หน่วย: <br />
+          <InputDropdown v-model="itemForm.unitId" :options="unitDropdownOption" />
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <button @click="closeDialog" class="gray" style="margin-right: 8px">close</button>
+      <button @click="saveChange" class="blue">save change</button>
+    </template>
+  </ModalDialog>
+  <ConfirmModal ref="confirmDialog" />
 </template>
 
 <script lang="ts" setup>
-import MainFrame from '@/components/layout/BasicLayout.vue'
 import { ref, onMounted, inject, computed } from 'vue'
-import Modal from '@/components/modal/ModalDialog.vue'
+import { ModalDialog } from '@/components/modal'
 import { InputDropdown } from '@/components/input'
 import { useItemApi, useUnitApi } from '@/composables/api'
 import { statusCode as status } from '@/interface/api'
 import type { Option } from '@/interface/dropdown'
 import type { ItemApiRequest } from '@/composables/api/useItemApi'
 import type { Item, ItemForm } from '@/interface/item'
-import DataTable from '@/components/dataTable/DataTable.vue'
-import type { ModalOption } from '@/interface/modal.js'
+import { DataTable } from '@/components/dataTable'
+import type { ModalOption } from '@/interface/modal'
 
 import type { IColumn, TableOption } from '@/interface/dataTable'
-import type { Unit } from '@/interface/unit.js'
-import ConfirmModal from '@/components/modal/ConfirmModal.vue'
+import type { Unit } from '@/interface/unit'
+import { ConfirmModal } from '@/components/modal'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
 const modalOption = ref<ModalOption>({ style: { width: '450px' } })
