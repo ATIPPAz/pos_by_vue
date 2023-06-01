@@ -21,26 +21,26 @@
         <template #cell-unitName="{ data }">
           {{ data.unitName }}
         </template>
-        <template #cell-itemQty="{ data }">
-          <input type="number" min="0" v-model="data.itemQty" />
+        <template #cell-itemQty="{ index }">
+          <input type="number" min="0" v-model="receiptDetail[index].itemQty" />
         </template>
         <template #cell-itemPrice="{ data }">
           {{ data.itemPrice }}
         </template>
-        <template #cell-itemDiscountPercent="{ data }">
+        <template #cell-itemDiscountPercent="{ index }">
           <input
             type="number"
             min="0"
             max="100"
             style="width: 95%"
-            v-model="data.itemDiscountPercent"
+            v-model="receiptDetail[index].itemDiscountPercent"
           />
         </template>
-        <template #cell-itemDiscount="{ data }">
-          {{ data.itemDiscount }}
+        <template #cell-itemDiscount="{ index }">
+          {{ calDiscount(index) }}
         </template>
-        <template #cell-itemAmount="{ data }">
-          {{ data.itemAmount }}
+        <template #cell-itemAmount="{ index }">
+          {{ calAmount(index) }}
         </template>
 
         <template #cell-idRowAction="data">
@@ -111,9 +111,9 @@
 import DataTable from '@/components/dataTable/DataTable.vue'
 import ModalSelectItem from '@/components/modal/ModalSelectItem.vue'
 import { useReceiptApi, useItemApi } from '@/composables/api'
-import { ref, computed, watch, defineComponent } from 'vue'
+import { ref, computed, defineComponent } from 'vue'
 import type { Item } from '@/interface/item'
-import type { Receipt, ReceiptDetail } from '@/interface/receipt'
+import type { ReceiptDetail } from '@/interface/receipt'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import MainFrame from '@/components/layout/BasicLayout.vue'
@@ -146,13 +146,14 @@ export default defineComponent({
     const receiptTradeDiscount = ref<number>(0)
     const receiptTotalDiscount = computed(() => {
       let sum = 0
-      receiptDetailsData.value.forEach((e) => {
-        sum += e.itemDiscount
-      })
+      for (let index = 0; index < receiptDetail.value.length; index++) {
+        sum += calDiscount(index)
+      }
       return sum
     })
     const receiptTotalBeforeDiscount = computed(() => {
       let sum = 0
+
       receiptDetailsData.value.forEach((e) => {
         sum += e.itemPrice * e.itemQty
       })
@@ -189,16 +190,7 @@ export default defineComponent({
     async function setDefaultReceipt() {
       const prefix = await getPrefix()
       receiptCode.value = prefix?.prefix_keyName.padEnd(5, 'X') ?? ''
-      // receiptData.value = {
-      //   receiptTradeDiscount: 0,
-      //   receiptCode: prefix?.prefix_keyName.padEnd(5, 'X'),
-      //   receiptDate: formatDateForDisplay(new Date()),
-      //   receiptTotalDiscount: 0,
-      //   receiptGrandTotal: 0,
-      //   receiptdetails: [],
-      //   receiptSubTotal: 0,
-      //   receiptTotalBeforeDiscount: 0
-      // }
+      receiptDetail.value = []
     }
     function formatDateForBackend(dateString: string): string {
       const date = dateString.split('/')
@@ -300,8 +292,15 @@ export default defineComponent({
     async function saveReceipt() {
       const idloader = crypto.randomUUID()
       loader?.setLoadingOn(idloader)
+      const detail = receiptDetailsData.value.slice(0, -1)
+      detail.forEach((e, index) => {
+        const amount = calAmount(index)
+        const discount = calDiscount(index)
+        e.itemAmount = amount
+        e.itemDiscount = discount
+      })
       const { statusCode } = await receiptApi.createReceipt({
-        receiptdetails: receiptDetailsData.value.slice(0, -1),
+        receiptdetails: detail,
         receiptGrandTotal: receiptGrandTotal.value,
         receiptSubTotal: receiptSubTotal.value,
         receiptTotalBeforeDiscount: receiptTotalBeforeDiscount.value,
@@ -325,15 +324,22 @@ export default defineComponent({
       await setDefaultReceipt()
       loader?.setLoadingOff(idloader)
     })
-
+    function calAmount(index: number) {
+      const row = receiptDetail.value[index]
+      return row.itemPrice * row.itemQty - calDiscount(index)
+    }
+    function calDiscount(index: number) {
+      const row = receiptDetail.value[index]
+      return (row.itemPrice * row.itemQty * row.itemDiscountPercent) / 100
+    }
     const receiptDetailsData = computed(() => {
-      receiptDetail.value.forEach((e) => {
-        const sum = e.itemPrice * e.itemQty
-        const discount = sum * (e.itemDiscountPercent / 100)
-        const total = sum - discount
-        e.itemDiscount = discount
-        e.itemAmount = total
-      })
+      // receiptDetail.value.forEach((e) => {
+      //   // const sum = e.itemPrice * e.itemQty
+      //   // const discount = sum * (e.itemDiscountPercent / 100)
+      //   // const total = sum - discount
+      //   // e.itemDiscount = discount
+      //   // e.itemAmount = total
+      // })
       const res = receiptDetail.value.slice()
       res.push({
         unitName: '',
@@ -357,7 +363,10 @@ export default defineComponent({
       saveReceipt,
       closeModal,
       modalSelectItem,
+      receiptDetail,
       receiptDetailsData,
+      calAmount,
+      calDiscount,
       selectItemModal,
       receiptGrandTotal,
       receiptTradeDiscount,
