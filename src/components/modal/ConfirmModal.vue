@@ -11,64 +11,31 @@
   </ModalDialog>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import ModalDialog from '@/components/modal/ModalDialog.vue'
-import { defineComponent, ref } from 'vue'
+import { ref } from 'vue'
 import type { ModalOption } from '@/interface/modal.js'
-import { computed } from 'vue'
-
-export default defineComponent({
-  components: { ModalDialog },
-  // props: {
-  //   open: {
-  //     type: Boolean,
-  //     required: true
-  //   }
-  // },
-  // emits: {
-  //   'update:open'(value: boolean) {
-  //     return true
-  //   }
-  // },
-  setup(props, { emit }) {
-    let res: ((value: boolean | PromiseLike<boolean>) => void) | null
-    const open = ref(false)
-    // const openLocal = computed({
-    //   get() {
-    //     return props.open
-    //   },
-    //   set(value) {
-    //     emit('update:open', value)
-    //   }
-    // })
-    function getConfirmResult() {
-      // openLocal.value = true
-      open.value = true
-      return new Promise<boolean>((resolve) => {
-        res = resolve
-      })
-    }
-    const option = ref<ModalOption>({
-      style: {
-        width: '600px',
-        height: '200px',
-        'margin-top': '200px'
-      }
-    })
-    function closeModal(result: boolean) {
-      open.value = false
-      if (res) {
-        res(result)
-        res = null
-      }
-    }
-    return {
-      getConfirmResult,
-      closeModal,
-      // openLocal,
-      open,
-      option
-    }
+let res: ((value: boolean | PromiseLike<boolean>) => void) | null
+const open = ref(false)
+function getConfirmResult() {
+  open.value = true
+  return new Promise<boolean>((resolve) => {
+    res = resolve
+  })
+}
+const option = ref<ModalOption>({
+  style: {
+    width: '600px',
+    height: '200px',
+    'margin-top': '200px'
   }
 })
+function closeModal(result: boolean) {
+  open.value = false
+  if (res) {
+    res(result)
+    res = null
+  }
+}
+defineExpose({ getConfirmResult })
 </script>

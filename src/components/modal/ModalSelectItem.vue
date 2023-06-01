@@ -38,60 +38,48 @@
     </template>
   </ModalDialog>
 </template>
-<script lang="ts">
-import { defineComponent, ref } from 'vue'
+<script lang="ts" setup>
+import { ref } from 'vue'
 import ModalDialog from '@/components/modal/ModalDialog.vue'
-import type { IModalSelectItemOption } from '@/interface/modal/modalSelectItem'
+
 import type { PropType } from 'vue'
 import type { Item } from '@/interface/item'
 import { computed } from 'vue'
 
-export default defineComponent({
-  components: { ModalDialog },
-  props: {
-    allItems: {
-      type: Array as PropType<Item[]>,
-      required: true
-    }
-    // option: { type: Object as PropType<IModalSelectItemOption>, required: true }
-  },
-
-  setup(props) {
-    const open = ref(false)
-    const selectedIndex = ref<number>(-1)
-    let res: ((value: number | undefined | PromiseLike<number | undefined>) => void) | null
-
-    const itemSelect = computed(() => {
-      return selectedIndex.value >= 0 ? props.allItems[selectedIndex.value] : undefined
-    })
-    function selectItemInModal(itemIndex: number) {
-      selectedIndex.value = itemIndex
-    }
-    function getItemSelectResult(itemId?: number) {
-      open.value = true
-      selectedIndex.value = props.allItems.findIndex((e) => e.itemId === itemId)
-      return new Promise<number | undefined>((resolve) => {
-        res = resolve
-      })
-    }
-    function closeModal(itemId?: number) {
-      selectedIndex.value = -1
-      open.value = false
-      if (res) {
-        res(itemId)
-        res = null
-      }
-    }
-    return {
-      selectItemInModal,
-      itemSelect,
-      getItemSelectResult,
-      closeModal,
-      selectedIndex,
-      open
-    }
+const props = defineProps({
+  allItems: {
+    type: Array as PropType<Item[]>,
+    required: true
   }
+  // option: { type: Object as PropType<IModalSelectItemOption>, required: true }
 })
+
+const open = ref(false)
+const selectedIndex = ref<number>(-1)
+let res: ((value: number | undefined | PromiseLike<number | undefined>) => void) | null
+
+const itemSelect = computed(() => {
+  return selectedIndex.value >= 0 ? props.allItems[selectedIndex.value] : undefined
+})
+function selectItemInModal(itemIndex: number) {
+  selectedIndex.value = itemIndex
+}
+function getItemSelectResult(itemId?: number) {
+  open.value = true
+  selectedIndex.value = props.allItems.findIndex((e) => e.itemId === itemId)
+  return new Promise<number | undefined>((resolve) => {
+    res = resolve
+  })
+}
+function closeModal(itemId?: number) {
+  selectedIndex.value = -1
+  open.value = false
+  if (res) {
+    res(itemId)
+    res = null
+  }
+}
+defineExpose({ getItemSelectResult })
 </script>
 <style scoped>
 .select {

@@ -28,8 +28,6 @@ export default defineComponent({
   setup(props, { emit }) {
     const open = ref(false)
     function openModal() {
-      console.log('asdasda')
-
       open.value = true
     }
     const option = ref<ModalOption>({

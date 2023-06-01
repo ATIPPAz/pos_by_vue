@@ -87,7 +87,7 @@ export default defineComponent({
     const toast = inject(toastPluginSymbol)!
     const unitApi = useUnitApi()
     const itemApi = useItemApi()
-    const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
+    const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()!
     const columnData = ref<IColumn[]>([
       {
         key: 'itemCode',

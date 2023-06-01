@@ -28,114 +28,92 @@
   <ReceiptModal ref="receiptModal" :receipt-data="receiptDetailData" />
 </template>
 
-<script lang="ts">
-import MainFrame from '@/components/layout/BasicLayout.vue'
-import DataTable from '@/components/dataTable/DataTable.vue'
-import { loaderPluginSymbol } from '@/plugins/loading'
-import { useReceiptApi } from '@/composables/api'
+<script lang="ts" setup>
 import { statusCode as status } from '@/interface/api'
-import { ref, defineComponent, computed, onMounted, inject } from 'vue'
-import ReceiptModal from '@/components/modal/ReceiptModal.vue'
-import type { Receipt, ReceiptForm } from '@/interface/receipt'
-import type { IColumn, TableOption } from '@/interface/dataTable'
+import { useReceiptApi } from '@/composables/api'
+import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
+import { ref, computed, onMounted, inject } from 'vue'
 
-export default defineComponent({
-  components: {
-    MainFrame,
-    ReceiptModal,
-    DataTable
+import type { IColumn, TableOption } from '@/interface/dataTable'
+import type { Receipt, ReceiptForm } from '@/interface/receipt'
+
+import DataTable from '@/components/dataTable/DataTable.vue'
+import MainFrame from '@/components/layout/BasicLayout.vue'
+import ReceiptModal from '@/components/modal/ReceiptModal.vue'
+
+const receiptApi = useReceiptApi()
+const loader = inject(loaderPluginSymbol)!
+const toast = inject(toastPluginSymbol)!
+const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
+const endDate = ref(formatDateForDisplay(new Date()))
+const receiptModal = ref<InstanceType<typeof ReceiptModal>>()
+const columnsData = ref<IColumn[]>([
+  {
+    key: 'receiptCode',
+    label: 'เลขที่อ้างอิง'
   },
-  setup() {
-    const receiptApi = useReceiptApi()
-    const loader = inject(loaderPluginSymbol)!
-    const toast = inject(toastPluginSymbol)!
-    const startDate = ref(formatDateForDisplay(getPreviousDay(new Date())))
-    const endDate = ref(formatDateForDisplay(new Date()))
-    const receiptModal = ref<InstanceType<typeof ReceiptModal>>()
-    const columnsData = ref<IColumn[]>([
-      {
-        key: 'receiptCode',
-        label: 'เลขที่อ้างอิง'
-      },
-      { key: 'receiptDate', label: 'วันที่' },
-      { key: 'receiptGrandTotal', label: 'GrandTotal' }
-    ])
-    const option = ref<TableOption>({
-      actionLabel: 'ดำเนินการ'
-    })
-    const _receipt = ref<Receipt[]>([])
-    const receiptData = computed(() => _receipt.value)
-    const receiptDetailData = ref<ReceiptForm>({
-      receiptDate: '',
-      receiptdetails: [],
-      receiptGrandTotal: 0,
-      receiptSubTotal: 0,
-      receiptTotalBeforeDiscount: 0,
-      receiptTotalDiscount: 0,
-      receiptTradeDiscount: 0
-    })
-    async function searchReceipt() {
-      const idloader = crypto.randomUUID()
-      loader.setLoadingOn(idloader)
-      await getReceipt()
-      loader.setLoadingOff(idloader)
-    }
-    function getPreviousDay(date = new Date()) {
-      const previous = new Date(date.getTime())
-      previous.setDate(date.getDate() - 1)
-      return previous
-    }
-    function formatDateForDisplay(date: Date) {
-      const dayNo = (date.getDate() + '').padStart(2, '0')
-      const month = (date.getMonth() + 1).toString().padStart(2, '0')
-      const year = date.getFullYear()
-      return `${year}-${month}-${dayNo}`
-    }
-    async function getReceipt() {
-      const res = await receiptApi.getAllReceipt(startDate.value, endDate.value)
-      if (res.statusCode === status.getSuccess) {
-        _receipt.value = res.data as Receipt[]
-        return res.data
-      } else {
-        toast.error('ไม่สำเร็จ', 'เซิฟเวอร์มีปัญหา')
-        _receipt.value = []
-        return []
-      }
-    }
-    function openDetail(data: Receipt) {
-      const idloader = crypto.randomUUID()
-      loader.setLoadingOn(idloader)
-      const { data, statusCode } = await receiptApi.getOneReceipt(emitData.receiptId)
-      if (statusCode === status.error) {
-        toast?.error('เกิดข้อผิดพลาด', 'เซิฟเวอร์มีปัญหา')
-      }
-      loader.setLoadingOff(idloader)
-      console.log(data)
+  { key: 'receiptDate', label: 'วันที่' },
+  { key: 'receiptGrandTotal', label: 'GrandTotal' }
+])
+const option = ref<TableOption>({
+  actionLabel: 'ดำเนินการ'
+})
+const _receipt = ref<Receipt[]>([])
 
-      receiptDetailData.value = data as ReceiptForm
-      console.log(receiptModal.value)
-
-      receiptModal.value?.openModal()
-      // router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
-    }
-    onMounted(async () => {
-      const idloader = crypto.randomUUID()
-      loader.setLoadingOn(idloader)
-      await getReceipt()
-      loader.setLoadingOff(idloader)
-    })
-    return {
-      startDate,
-      option,
-      searchReceipt,
-      openDetail,
-      receiptDetailData,
-      receiptData,
-      endDate,
-      receiptModal,
-      columnsData
-    }
+const receiptDetailData = ref<ReceiptForm>({
+  receiptDate: '',
+  receiptdetails: [],
+  receiptGrandTotal: 0,
+  receiptSubTotal: 0,
+  receiptTotalBeforeDiscount: 0,
+  receiptTotalDiscount: 0,
+  receiptTradeDiscount: 0
+})
+async function searchReceipt() {
+  const idloader = crypto.randomUUID()
+  loader.setLoadingOn(idloader)
+  await getReceipt()
+  loader.setLoadingOff(idloader)
+}
+function getPreviousDay(date = new Date()) {
+  const previous = new Date(date.getTime())
+  previous.setDate(date.getDate() - 1)
+  return previous
+}
+function formatDateForDisplay(date: Date) {
+  const dayNo = (date.getDate() + '').padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  return `${year}-${month}-${dayNo}`
+}
+async function getReceipt() {
+  const res = await receiptApi.getAllReceipt(startDate.value, endDate.value)
+  if (res.statusCode === status.getSuccess) {
+    _receipt.value = res.data as Receipt[]
+    return res.data
+  } else {
+    toast.error('ไม่สำเร็จ', 'เซิฟเวอร์มีปัญหา')
+    _receipt.value = []
+    return []
   }
+}
+async function openDetail(emitData: Receipt) {
+  const idloader = crypto.randomUUID()
+  loader.setLoadingOn(idloader)
+  const { data, statusCode } = await receiptApi.getOneReceipt(emitData.receiptId!)
+  if (statusCode === status.error) {
+    toast?.error('เกิดข้อผิดพลาด', 'เซิฟเวอร์มีปัญหา')
+  }
+  loader.setLoadingOff(idloader)
+  receiptDetailData.value = data as ReceiptForm
+  receiptModal.value?.openModal()
+}
+const receiptData = computed(() => _receipt.value)
+onMounted(async () => {
+  const idloader = crypto.randomUUID()
+  loader.setLoadingOn(idloader)
+  await getReceipt()
+  loader.setLoadingOff(idloader)
 })
 </script>

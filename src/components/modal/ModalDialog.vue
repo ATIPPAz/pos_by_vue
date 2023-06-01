@@ -6,7 +6,7 @@
           <slot name="header">
             <p class="modal-title">modal</p>
           </slot>
-          <span class="close" style="font-size: 24px" @click="$emit('update:open', false)">
+          <span class="close" style="font-size: 24px" @click="emit('update:open', false)">
             &times;
           </span>
         </div>
@@ -16,7 +16,7 @@
       </div>
       <div class="modal-footer">
         <slot name="footer">
-          <button @click="$emit('update:open', false)" class="gray" style="margin-right: 8px">
+          <button @click="emit('update:open', false)" class="gray" style="margin-right: 8px">
             close
           </button>
         </slot>
@@ -25,35 +25,28 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import type { PropType } from 'vue'
-import { defineComponent, computed } from 'vue'
+import { computed } from 'vue'
 import type { ModalOption } from '@/interface/modal.js'
-export default defineComponent({
-  props: {
-    open: {
-      type: Boolean,
-      default: false,
-      required: true
-    },
-    option: {
-      type: Object as PropType<ModalOption>,
-      required: false
-    }
+const props = defineProps({
+  open: {
+    type: Boolean,
+    default: false,
+    required: true
   },
-  emits: {
-    'update:open'(value: boolean) {
-      return true
-    }
-  },
-  setup(ctx) {
-    const style = computed(() => {
-      return ctx.option?.style ? { ...ctx.option.style } : { width: '400px' }
-    })
-    return {
-      style
-    }
+  option: {
+    type: Object as PropType<ModalOption>,
+    required: false
   }
+})
+const emit = defineEmits({
+  'update:open'(value: boolean) {
+    return true
+  }
+})
+const style = computed(() => {
+  return props.option?.style ? { ...props.option.style } : { width: '400px' }
 })
 </script>
 
