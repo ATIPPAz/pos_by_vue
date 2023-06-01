@@ -72,67 +72,59 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import DataTable from '@/components/dataTable/DataTable.vue'
-import { ref, defineComponent } from 'vue'
+import { ref } from 'vue'
 import type { ReceiptForm } from '@/interface/receipt'
 import type { IColumn } from '@/interface/dataTable'
 import type { PropType } from 'vue'
 import { computed } from 'vue'
-export default defineComponent({
-  components: { DataTable },
-  props: {
-    receiptProp: {
-      type: Object as PropType<ReceiptForm>,
-      required: true
-    }
-  },
-  setup(props) {
-    const columnsData = ref<IColumn[]>([
-      {
-        key: 'itemCode',
-        label: 'รหัสสินค้า'
-      },
-      { key: 'itemName', label: 'ชื่อสินค้า' },
-      { key: 'unitName', label: 'หน่วย' },
-      {
-        key: 'itemQty',
-        label: 'จำนวน'
-      },
-      { key: 'itemPrice', label: 'ราคา' },
-      {
-        key: 'itemDiscountPercent',
-        label: 'ราคาส่วนลด (%)'
-      },
-      { key: 'itemDiscount', label: 'ส่วนลด (บาท)' },
-      { key: 'itemAmount', label: 'รวมเงิน' }
-    ])
 
-    const receiptData = computed(() => {
-      const res = props.receiptProp
-      let date = new Date(res.receiptDate)
-      if (date.toString() == 'Invalid Date') {
-        res.receiptDate = formatDateForDisplay(res.receiptDate)
-      } else {
-        res.receiptDate = formatDateForDisplay(date)
-      }
-      return res
-    })
-    function formatDateForDisplay(date: Date | string): string {
-      if (typeof date === typeof '') {
-        return date.toString()
-      }
-      const dateTime = date as Date
-      const dayNo = (dateTime.getDate() + '').padStart(2, '0')
-      const month = (dateTime.getMonth() + 1).toString().padStart(2, '0')
-      const year = dateTime.getFullYear()
-      return `${dayNo}/${month}/${year}`
-    }
-
-    return {
-      receiptData,
-      columnsData
-    }
+const props = defineProps({
+  receiptProp: {
+    type: Object as PropType<ReceiptForm>,
+    required: true
   }
 })
+
+const columnsData = ref<IColumn[]>([
+  {
+    key: 'itemCode',
+    label: 'รหัสสินค้า'
+  },
+  { key: 'itemName', label: 'ชื่อสินค้า' },
+  { key: 'unitName', label: 'หน่วย' },
+  {
+    key: 'itemQty',
+    label: 'จำนวน'
+  },
+  { key: 'itemPrice', label: 'ราคา' },
+  {
+    key: 'itemDiscountPercent',
+    label: 'ราคาส่วนลด (%)'
+  },
+  { key: 'itemDiscount', label: 'ส่วนลด (บาท)' },
+  { key: 'itemAmount', label: 'รวมเงิน' }
+])
+
+const receiptData = computed(() => {
+  const res = props.receiptProp
+  let date = new Date(res.receiptDate)
+  if (date.toString() == 'Invalid Date') {
+    res.receiptDate = formatDateForDisplay(res.receiptDate)
+  } else {
+    res.receiptDate = formatDateForDisplay(date)
+  }
+  return res
+})
+function formatDateForDisplay(date: Date | string): string {
+  if (typeof date === typeof '') {
+    return date.toString()
+  }
+  const dateTime = date as Date
+  const dayNo = (dateTime.getDate() + '').padStart(2, '0')
+  const month = (dateTime.getMonth() + 1).toString().padStart(2, '0')
+  const year = dateTime.getFullYear()
+  return `${dayNo}/${month}/${year}`
+}
 </script>

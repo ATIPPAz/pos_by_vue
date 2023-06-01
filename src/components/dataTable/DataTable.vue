@@ -11,7 +11,7 @@
       <tbody>
         <tr
           style="cursor: pointer"
-          @click="$emit('update:selectIndexRow', index)"
+          @click="emit('update:selectIndexRow', index)"
           v-for="(row, index) in dataTable"
           :key="index"
           :class="
@@ -36,9 +36,8 @@
             </td>
           </slot>
         </tr>
-       <tr v-show="dataTable.length <= 0">
-          
-	  <th :colspan="column?.length ? column.length + 2 : 99">
+        <tr v-show="dataTable.length <= 0">
+          <th :colspan="column?.length ? column.length + 2 : 99">
             <div style="font-size: 48px; font-weight: bold; color: #adadad">No data</div>
           </th>
         </tr>
@@ -47,73 +46,66 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { computed, onMounted, defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
+import { useSlots } from 'vue'
+
+const slots = useSlots()
 const idRowNumber = 'idRowNumber'
 const idRowAction = 'idRowAction'
-export default defineComponent({
-  props: {
-    column: {
-      type: Array as PropType<IColumn[]>,
-      required: true,
-      default: () => []
-    },
-    data: {
-      type: Array as PropType<any[]>,
-      default: () => []
-    },
-    selectIndexRow: {
-      type: Number,
-      default: -1
-    },
-    option: {
-      type: Object as PropType<TableOption>,
-      default: () => {
-        return {
-          pagination: 10,
-          rowNumber: true,
-          actionLabel: 'action'
-        }
-      }
-    }
-  },
-  emits: {
-    'update:selectIndexRow'(value: any) {
-      return true
-    }
-  },
-  setup(props, ctx) {
-    const columnInfos = computed(() => {
-      const columnInfos: IColumn[] = []
-      if (props.option.rowNumber || props.option.rowNumber === undefined) {
-        columnInfos.push({ key: idRowNumber, label: 'No.' })
-      }
-      for (const col of props.column) {
-        columnInfos.push(col)
-      }
-      if (hasActionSlot.value) {
-        columnInfos.push({ key: idRowAction, label: props.option.actionLabel ?? 'action' })
-      }
-      return columnInfos
-    })
 
-    const dataTable = computed(() => {
-      return props.data
-    })
-    const hasActionSlot = computed(() => {
-      return !!ctx.slots['cell-idRowAction']
-    })
-
-    return {
-      dataTable,
-      idRowAction,
-      idRowNumber,
-      hasActionSlot,
-      columnInfos
+const props = defineProps({
+  column: {
+    type: Array as PropType<IColumn[]>,
+    required: true,
+    default: () => []
+  },
+  data: {
+    type: Array as PropType<any[]>,
+    default: () => []
+  },
+  selectIndexRow: {
+    type: Number,
+    default: -1
+  },
+  option: {
+    type: Object as PropType<TableOption>,
+    default: () => {
+      return {
+        pagination: 10,
+        rowNumber: true,
+        actionLabel: 'action'
+      }
     }
   }
+})
+const emit = defineEmits({
+  'update:selectIndexRow'(value: any) {
+    return true
+  }
+})
+
+const columnInfos = computed(() => {
+  const columnInfos: IColumn[] = []
+  if (props.option.rowNumber || props.option.rowNumber === undefined) {
+    columnInfos.push({ key: idRowNumber, label: 'No.' })
+  }
+  for (const col of props.column) {
+    columnInfos.push(col)
+  }
+  if (hasActionSlot.value) {
+    columnInfos.push({ key: idRowAction, label: props.option.actionLabel ?? 'action' })
+  }
+  return columnInfos
+})
+
+const dataTable = computed(() => {
+  return props.data
+})
+const hasActionSlot = computed(() => {
+  return !!slots['cell-idRowAction']
 })
 </script>
 
