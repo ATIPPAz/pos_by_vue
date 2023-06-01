@@ -4,10 +4,10 @@
     <template #content>
       <div style="margin-bottom: 14px">
         <label for="receiptCode">เลขที่เอกสาร:</label> <br />
-        <input type="text" name="" id="receiptCode" disabled :value="receiptData.receiptCode" />
+        <input type="text" name="" disabled :value="receiptCode" />
         <br />
         <label for="">วันที่</label> <br />
-        <input type="text" name="" id="dateNow" disabled :value="receiptData.receiptDate" />
+        <input type="text" name="" disabled :value="receiptDate" />
       </div>
       <DataTable :column="columnsData" :data="receiptDetailsData" :option="option">
         <template #cell-itemCode="{ index, data }">
@@ -21,26 +21,26 @@
         <template #cell-unitName="{ data }">
           {{ data.unitName }}
         </template>
-        <template #cell-itemQty="{ data }">
-          <input type="number" min="0" v-model="data.itemQty" />
+        <template #cell-itemQty="{ index }">
+          <input type="number" min="0" v-model="receiptDetail[index].itemQty" />
         </template>
         <template #cell-itemPrice="{ data }">
           {{ data.itemPrice }}
         </template>
-        <template #cell-itemDiscountPercent="{ data }">
+        <template #cell-itemDiscountPercent="{ index }">
           <input
             type="number"
             min="0"
             max="100"
             style="width: 95%"
-            v-model="data.itemDiscountPercent"
+            v-model="receiptDetail[index].itemDiscountPercent"
           />
         </template>
-        <template #cell-itemDiscount="{ data }">
-          <input type="number" min="0" v-model="data.itemDiscount" />
+        <template #cell-itemDiscount="{ index }">
+          {{ calDiscount(index) }}
         </template>
-        <template #cell-itemAmount="{ data }">
-          {{ data.itemAmount }}
+        <template #cell-itemAmount="{ index }">
+          {{ calAmount(index) }}
         </template>
 
         <template #cell-idRowAction="data">
@@ -68,29 +68,19 @@
           <tbody>
             <tr>
               <td class="t-start">ยอดรวมสินค้าก่อนลด</td>
-              <td>
-                <input
-                  type="number"
-                  :value="receiptData.receiptTotalBeforeDiscount"
-                  disabled
-                /><br />
-              </td>
+              <td><input type="number" :value="receiptTotalBeforeDiscount" disabled /><br /></td>
             </tr>
             <tr>
               <td class="t-start">ยอดรวมส่วนลดสินค้า</td>
-              <td>
-                <input type="number" :value="receiptData.receiptTotalDiscount" disabled /><br />
-              </td>
+              <td><input type="number" :value="receiptTotalDiscount" disabled /><br /></td>
             </tr>
             <tr>
               <td class="t-start">Subtotal</td>
-              <td><input type="number" :value="receiptData.receiptSubTotal" disabled /><br /></td>
+              <td><input type="number" :value="receiptSubTotal" disabled /><br /></td>
             </tr>
             <tr>
               <td class="t-start">ส่วนลดการค้า</td>
-              <td>
-                <input type="number" v-model="receiptData.receiptTradeDiscount" min="0" /><br />
-              </td>
+              <td><input type="number" v-model="receiptTradeDiscount" min="0" /><br /></td>
             </tr>
             <tr>
               <td class="t-start">Grand total</td>
@@ -99,7 +89,7 @@
                   type="number"
                   name=""
                   id="grandTotal"
-                  :value="receiptData.receiptGrandTotal"
+                  :value="receiptGrandTotal"
                   disabled
                 /><br />
               </td>
@@ -123,9 +113,9 @@
 import DataTable from '@/components/dataTable/DataTable.vue'
 import ModalSelectItem from '@/components/modal/ModalSelectItem.vue'
 import { useReceiptApi, useItemApi } from '@/composables/api'
-import { ref, computed, watch, defineComponent } from 'vue'
+import { ref, computed, defineComponent } from 'vue'
 import type { Item } from '@/interface/item'
-import type { Receipt } from '@/interface/receipt'
+import type { ReceiptDetail } from '@/interface/receipt'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import MainFrame from '@/components/layout/BasicLayout.vue'
@@ -138,7 +128,6 @@ import { statusCode as status } from '@/interface/api'
 import { toastPluginSymbol } from '@/plugins/toast'
 export default defineComponent({
   components: { DataTable, ReceiptModal, ModalSelectItem, ConfirmModal, MainFrame },
-
   setup() {
     const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()
     const loader = inject(loaderPluginSymbol)
@@ -153,6 +142,32 @@ export default defineComponent({
     const option = ref<TableOption>({ actionLabel: 'ดำเนินการ' })
     const itemModal = ref<Item[]>([])
     const selectItemModal = ref<Item | null>(null)
+    const receiptDetail = ref<ReceiptDetail[]>([])
+    const receiptCode = ref('')
+    const receiptDate = ref(formatDateForDisplay(new Date()))
+    const receiptGrandTotal = computed(() => {
+      return receiptSubTotal.value - receiptTradeDiscount.value
+    })
+    const receiptTradeDiscount = ref<number>(0)
+    const receiptTotalDiscount = computed(() => {
+      let sum = 0
+      for (let index = 0; index < receiptDetail.value.length; index++) {
+        sum += calDiscount(index)
+      }
+      return sum
+    })
+    const receiptTotalBeforeDiscount = computed(() => {
+      let sum = 0
+
+      receiptDetailsData.value.forEach((e) => {
+        sum += e.itemPrice * e.itemQty
+      })
+      return sum
+    })
+    const receiptSubTotal = computed(() => {
+      return receiptTotalBeforeDiscount.value - receiptTotalDiscount.value
+    })
+
     const columnsData = ref<IColumn[]>([
       {
         key: 'itemCode',
@@ -172,34 +187,26 @@ export default defineComponent({
       { key: 'itemDiscount', label: 'ส่วนลด (บาท)' },
       { key: 'itemAmount', label: 'รวมเงิน' }
     ])
-    const receiptData = ref<Receipt>({
-      receiptdetails: []
-    })
+
     async function getPrefix() {
-      return (await receiptApi.getPrefix()).data
+      const { data } = await receiptApi.getPrefix()
+      return data
     }
     async function setDefaultReceipt() {
       const prefix = await getPrefix()
-      receiptData.value = {
-        receiptTradeDiscount: 0,
-        receiptCode: prefix?.prefix_keyName.padEnd(5, 'X'),
-        receiptDate: formatDateForDisplay(new Date()),
-        receiptTotalDiscount: 0,
-        receiptGrandTotal: 0,
-        receiptdetails: [],
-        receiptSubTotal: 0,
-        receiptTotalBeforeDiscount: 0
-      }
+      receiptCode.value = prefix?.prefix_keyName.padEnd(5, 'X') ?? ''
+      receiptDetail.value = []
     }
     function formatDateForBackend(dateString: string): string {
       const date = dateString.split('/')
       return `${date[2]}-${date[1]}-${date[0]}`
     }
     async function openModal(index: number) {
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
       const res = await itemApi.getItem()
       itemModal.value = res.data ?? []
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
       if (index === receiptDetailsData.value.length - 1) {
         const itemId = await modalSelectItem.value?.getItemSelectResult()
         if (itemId) {
@@ -216,7 +223,8 @@ export default defineComponent({
             itemQty: 0,
             itemDiscountPercent: 0
           }
-          receiptData.value.receiptdetails?.push(selectedItem)
+
+          receiptDetail.value.push(selectedItem)
         }
       } else {
         const itemId = await modalSelectItem.value?.getItemSelectResult(
@@ -237,7 +245,7 @@ export default defineComponent({
               itemQty: 0,
               itemDiscountPercent: 0
             }
-            receiptData.value.receiptdetails[index] = selectedItem
+            receiptDetail.value[index] = selectedItem
           }
         }
       }
@@ -255,10 +263,10 @@ export default defineComponent({
         itemQty: 0,
         itemDiscountPercent: 0
       }
-      if (itemSelectIndex.value !== -1 && receiptData.value.receiptdetails) {
-        receiptData.value.receiptdetails[itemSelectIndex.value] = selectedItem
+      if (itemSelectIndex.value !== -1 && receiptDetail.value) {
+        receiptDetail.value[itemSelectIndex.value] = selectedItem
       } else {
-        receiptData.value.receiptdetails?.push(selectedItem)
+        receiptDetail.value?.push(selectedItem)
       }
       modalOpen.value = false
       selectItemModal.value = null
@@ -269,10 +277,10 @@ export default defineComponent({
         selectItemModal.value = item
       }
     }
-    async function removeItemInReceipt(data: any) {
+    async function removeItemInReceipt(data: { index: number }) {
       if (await confirmDialog.value?.getConfirmResult()) {
-        if (receiptData.value.receiptdetails) {
-          receiptData.value.receiptdetails.splice(data.index, 1)
+        if (receiptDetail.value) {
+          receiptDetail.value.splice(data.index, 1)
         }
       }
     }
@@ -287,38 +295,50 @@ export default defineComponent({
       selectItemModal.value = null
     }
     async function saveReceipt() {
-      if (receiptData.value.receiptDate) {
-        receiptData.value.receiptDate = formatDateForBackend(receiptData.value.receiptDate)
-      }
-      delete receiptData.value.receiptCode
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
+      const detail = receiptDetailsData.value.slice(0, -1)
+      detail.forEach((e, index) => {
+        const amount = calAmount(index)
+        const discount = calDiscount(index)
+        e.itemAmount = amount
+        e.itemDiscount = discount
+      })
       const { statusCode } = await receiptApi.createReceipt({
-        ...receiptData.value,
-        receiptDate: receiptData.value.receiptDate ?? '',
-        receiptGrandTotal: receiptData.value.receiptGrandTotal ?? 0,
-        receiptTotalBeforeDiscount: receiptData.value.receiptTotalBeforeDiscount ?? 0,
-        receiptTotalDiscount: receiptData.value.receiptTotalDiscount ?? 0,
-        receiptSubTotal: receiptData.value.receiptSubTotal ?? 0,
-        receiptTradeDiscount: receiptData.value.receiptTradeDiscount ?? 0
+        receiptdetails: detail,
+        receiptGrandTotal: receiptGrandTotal.value,
+        receiptSubTotal: receiptSubTotal.value,
+        receiptTotalBeforeDiscount: receiptTotalBeforeDiscount.value,
+        receiptTotalDiscount: receiptTotalDiscount.value,
+        receiptTradeDiscount: receiptTradeDiscount.value,
+        receiptDate: formatDateForBackend(receiptDate.value)
       })
       if (statusCode === status.createSuccess) {
         toast?.success('สำเร็จ', 'สร้างสินค้ารายการสั่งซื้อสำเร็จ')
+        receiptDetail.value = []
       } else {
         toast?.error('ไม่สำเร็จ', 'ไม่สามารถสร้างรายการซื้อสินค้าได้')
       }
       await setDefaultReceipt()
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
     }
 
     onMounted(async () => {
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
       await setDefaultReceipt()
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
     })
-    ;(async () => {})()
-
+    function calAmount(index: number) {
+      const row = receiptDetail.value[index]
+      return row.itemPrice * row.itemQty - calDiscount(index)
+    }
+    function calDiscount(index: number) {
+      const row = receiptDetail.value[index]
+      return (row.itemPrice * row.itemQty * row.itemDiscountPercent) / 100
+    }
     const receiptDetailsData = computed(() => {
-      const res = receiptData.value.receiptdetails.slice()
+      const res = receiptDetail.value.slice()
       res.push({
         unitName: '',
         itemId: 0,
@@ -333,46 +353,6 @@ export default defineComponent({
       return res
     })
 
-    watch(
-      () => receiptData.value.receiptdetails,
-      (newValue, oldValue) => {
-        let sum = 0
-        let sumDiscount = 0
-        newValue?.forEach((e) => {
-          e.itemAmount = e.itemPrice * e.itemQty
-          sum += e.itemAmount
-          e.itemDiscount = (e.itemDiscountPercent / 100) * e.itemAmount
-          sumDiscount += e.itemDiscount
-          e.itemAmount -= e.itemDiscount
-        })
-        receiptData.value.receiptTotalBeforeDiscount = sum
-        receiptData.value.receiptTotalDiscount = sumDiscount
-        receiptData.value.receiptSubTotal =
-          receiptData.value.receiptTotalBeforeDiscount - receiptData.value.receiptTotalDiscount
-        if (
-          receiptData.value.receiptTradeDiscount &&
-          receiptData.value.receiptTradeDiscount > receiptData.value.receiptSubTotal
-        ) {
-          receiptData.value.receiptTradeDiscount = 0
-        } else {
-          receiptData.value.receiptGrandTotal =
-            receiptData.value.receiptSubTotal - (receiptData.value.receiptTradeDiscount ?? 0)
-        }
-      },
-      { deep: true }
-    )
-    watch(
-      () => receiptData.value.receiptTradeDiscount,
-      (newValue, oldValue) => {
-        if (newValue && newValue >= 0 && newValue <= (receiptData.value.receiptSubTotal ?? 0)) {
-          receiptData.value.receiptGrandTotal = (receiptData.value.receiptSubTotal ?? 0) - newValue
-        } else {
-          receiptData.value.receiptTradeDiscount = 0
-          receiptData.value.receiptGrandTotal = 0
-        }
-      }
-    )
-
     return {
       removeItemInReceipt,
       openModal,
@@ -381,12 +361,19 @@ export default defineComponent({
       saveReceipt,
       closeModal,
       modalSelectItem,
-      receiptModal,
+      receiptDetail,
       receiptDetailsData,
+      calAmount,
+      calDiscount,
       selectItemModal,
-      receiptData,
-
+      receiptGrandTotal,
+      receiptTradeDiscount,
+      receiptCode,
+      receiptSubTotal,
       modalOpen,
+      receiptDate,
+      receiptTotalDiscount,
+      receiptTotalBeforeDiscount,
       itemModal,
       columnsData,
       option,
@@ -397,12 +384,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style scoped>
-.select {
-  color: rgb(0, 71, 224);
-}
-li {
-  margin: 8px 0px;
-}
-</style>

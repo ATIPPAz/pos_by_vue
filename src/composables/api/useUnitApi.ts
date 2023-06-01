@@ -11,14 +11,14 @@ export interface UnitApiResponse {
 }
 const controller = 'unit'
 export function useUnitApi() {
-  async function getUnit(): Promise<Api<UnitApiResponse[] | null>> {
+  async function getUnit(): Promise<Api<UnitApiResponse[]>> {
     return await getRequest(`${endpoint}${controller}/getUnits`)
       .then(async (e: any) => {
         return (await e.json()) as Api<UnitApiResponse[]>
       })
       .catch((e: any) => {
         console.log(e)
-        return { statusCode: 500, data: null }
+        return { statusCode: 500, data: [] }
       })
   }
   async function createUnit(data: UnitApiRequest): Promise<Api> {

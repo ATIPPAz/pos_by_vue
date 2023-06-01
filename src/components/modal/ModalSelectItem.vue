@@ -1,5 +1,5 @@
 <template>
-  <ModalDialog :open="open" @update:open="closeModal(undefined)">
+  <ModalDialog :open="open" @update:open="closeModal(-1)">
     <template #header>
       <p class="modal-title">เลือกสินค้า</p>
     </template>
@@ -33,7 +33,7 @@
       <div v-else>No Item Selected</div>
     </template>
     <template #footer>
-      <button @click="closeModal(undefined)" class="gray" style="margin-right: 8px">close</button>
+      <button @click="closeModal(-1)" class="gray" style="margin-right: 8px">close</button>
       <button @click="closeModal(itemSelect?.itemId)" class="blue">Select this item</button>
     </template>
   </ModalDialog>
@@ -93,3 +93,11 @@ export default defineComponent({
   }
 })
 </script>
+<style scoped>
+.select {
+  color: rgb(0, 71, 224);
+}
+li {
+  margin: 8px 0px;
+}
+</style>

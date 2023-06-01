@@ -142,7 +142,8 @@ export default defineComponent({
     }
 
     onMounted(async () => {
-      loader?.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader?.setLoadingOn(idloader)
       receiptId.value = parseInt(route.params.receiptId.toString())
       const { data, statusCode } = await receiptApi.getOneReceipt(receiptId.value)
       if (statusCode === status.error) {
@@ -154,7 +155,7 @@ export default defineComponent({
           new Date(receiptData.value.receiptDate)
         )
       }
-      loader?.setLoadingOff()
+      loader?.setLoadingOff(idloader)
     })
 
     return {

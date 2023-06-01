@@ -76,9 +76,10 @@ export default defineComponent({
       receiptTradeDiscount: 0
     })
     async function searchReceipt() {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getReceipt()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     }
     function getPreviousDay(date = new Date()) {
       const previous = new Date(date.getTime())
@@ -102,13 +103,14 @@ export default defineComponent({
         return []
       }
     }
-    async function openDetail(emitData: any) {
-      loader.setLoadingOn()
+    function openDetail(data: Receipt) {
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       const { data, statusCode } = await receiptApi.getOneReceipt(emitData.receiptId)
       if (statusCode === status.error) {
         toast?.error('เกิดข้อผิดพลาด', 'เซิฟเวอร์มีปัญหา')
       }
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
       console.log(data)
 
       receiptDetailData.value = data as ReceiptForm
@@ -118,9 +120,10 @@ export default defineComponent({
       // router.push({ name: 'receiptDetail', params: { receiptId: data.receiptId } })
     }
     onMounted(async () => {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getReceipt()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     })
     return {
       startDate,

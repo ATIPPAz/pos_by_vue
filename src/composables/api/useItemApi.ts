@@ -26,7 +26,7 @@ export function useItemApi() {
       })
       .catch((e: any) => {
         console.log(e)
-        return { statusCode: 500, data: null }
+        return { statusCode: 500, data: [] }
       })
   }
   async function createItem(data: ItemApiRequest) {

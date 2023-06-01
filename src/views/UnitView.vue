@@ -161,9 +161,9 @@ export default defineComponent({
       actionLabel: 'ดำเนินการ',
       rowNumber: true
     }
-    function modalOpen(data: any = null) {
+    function modalOpen(data: Unit | null = null) {
       if (data) {
-        unitForm.value.unitName = data.unitName
+        unitForm.value.unitName = data.unitName!
         unitForm.value.unitId = data.unitId ?? -1
         isEdit.value = true
       } else {
@@ -172,22 +172,23 @@ export default defineComponent({
       }
       open.value = true
     }
-    async function deleteUnit(data: any) {
+    async function deleteUnit(data: Unit) {
       if (await confirmDialog.value?.getConfirmResult()) {
-        loader.setLoadingOn()
-        const { statusCode } = await unitApi.deleteUnit(data.unitId)
+        const idloader = crypto.randomUUID()
+        loader.setLoadingOn(idloader)
+        const { statusCode } = await unitApi.deleteUnit(data.unitId!)
         if (statusCode === status.deleteSuccess) {
           toast.success('สำเร็จ', 'ลบหน่วยนับสำเร็จ')
         } else {
           toast.error('ไม่สำเร็จ', 'ไม่สามารถลบหน่วยนับได้')
         }
         await getUnit()
-        selectUnitIndex.value = -1
-        loader.setLoadingOff()
+        loader.setLoadingOff(idloader)
       }
     }
     async function saveChange() {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       let statusCode = 0
       if (!isEdit.value) {
         statusCode = await unitApi
@@ -204,7 +205,7 @@ export default defineComponent({
       open.value = false
       unitForm.value = { unitId: -1, unitName: '' }
       await getUnit()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     }
     function closeDialog() {
       open.value = false
@@ -215,9 +216,10 @@ export default defineComponent({
       unitData.value = res
     }
     onMounted(async () => {
-      loader.setLoadingOn()
+      const idloader = crypto.randomUUID()
+      loader.setLoadingOn(idloader)
       await getUnit()
-      loader.setLoadingOff()
+      loader.setLoadingOff(idloader)
     })
     const title = computed(() => {
       return !isEdit.value ? 'เพิ่มสินค้า' : 'แก้ไขหน่วย'

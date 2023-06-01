@@ -1,3 +1,3 @@
 export interface ModalOption {
-  style?: Object
+  style?: object
 }

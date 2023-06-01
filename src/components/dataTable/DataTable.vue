@@ -36,9 +36,9 @@
             </td>
           </slot>
         </tr>
-
-        <tr v-show="dataTable.length <= 0">
-          <th :colspan="column?.length ? column.length + 2 : 99">
+       <tr v-show="dataTable.length <= 0">
+          
+	  <th :colspan="column?.length ? column.length + 2 : 99">
             <div style="font-size: 48px; font-weight: bold; color: #adadad">No data</div>
           </th>
         </tr>
@@ -50,11 +50,7 @@
 <script lang="ts">
 import { computed, onMounted, defineComponent } from 'vue'
 import type { PropType } from 'vue'
-import type { IColumn, TableOption } from '@/interface/dataTable.js'
-interface ISelectRow<T = any> {
-  key: string
-  data: T
-}
+import type { IColumn, TableOption } from '@/interface/dataTable'
 const idRowNumber = 'idRowNumber'
 const idRowAction = 'idRowAction'
 export default defineComponent({
@@ -109,12 +105,8 @@ export default defineComponent({
     const hasActionSlot = computed(() => {
       return !!ctx.slots['cell-idRowAction']
     })
-    const hasSpecialRow = computed(() => {
-      return !!ctx.slots.specialRow
-    })
-    onMounted(() => {})
+
     return {
-      hasSpecialRow,
       dataTable,
       idRowAction,
       idRowNumber,

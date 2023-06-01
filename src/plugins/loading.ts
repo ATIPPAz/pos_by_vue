@@ -5,15 +5,16 @@ export const loaderPluginSymbol: InjectionKey<PluginInstance> = Symbol('$loader'
 function $loader() {
   const loader = ref(false)
   const loaderQueue: string[] = []
-  function setLoadingOn() {
-    loaderQueue.push('')
+  function setLoadingOn(id: string) {
+    loaderQueue.push(id)
     if (loaderQueue.length === 1) {
       loader.value = true
     }
   }
-  function setLoadingOff() {
+  function setLoadingOff(id: string) {
     if (loaderQueue.length > 0) {
-      loaderQueue.pop()
+      const index = loaderQueue.findIndex((e) => e === id)
+      loaderQueue.splice(index, 1)
     }
     if (loaderQueue.length === 0 && loader.value) {
       loader.value = false
