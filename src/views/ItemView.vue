@@ -53,9 +53,9 @@
   </MainFrame>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import MainFrame from '@/components/layout/BasicLayout.vue'
-import { ref, defineComponent, onMounted, inject, computed } from 'vue'
+import { ref, onMounted, inject, computed } from 'vue'
 import Modal from '@/components/modal/ModalDialog.vue'
 import { InputDropdown } from '@/components/input'
 import { useItemApi, useUnitApi } from '@/composables/api'
@@ -71,157 +71,126 @@ import type { Unit } from '@/interface/unit.js'
 import ConfirmModal from '@/components/modal/ConfirmModal.vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
 import { toastPluginSymbol } from '@/plugins/toast'
-
-export default defineComponent({
-  components: {
-    MainFrame,
-    InputDropdown,
-    DataTable,
-    ConfirmModal,
-    Modal
+const modalOption = ref<ModalOption>({ style: { width: '450px' } })
+const unitDropdown = ref<Unit[]>([])
+const loader = inject(loaderPluginSymbol)!
+const toast = inject(toastPluginSymbol)!
+const unitApi = useUnitApi()
+const itemApi = useItemApi()
+const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()!
+const columnData = ref<IColumn[]>([
+  {
+    key: 'itemCode',
+    label: 'รหัสสินค้า'
   },
-  setup() {
-    const modalOption = ref<ModalOption>({ style: { width: '450px' } })
-    const unitDropdown = ref<Unit[]>([])
-    const loader = inject(loaderPluginSymbol)!
-    const toast = inject(toastPluginSymbol)!
-    const unitApi = useUnitApi()
-    const itemApi = useItemApi()
-    const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()!
-    const columnData = ref<IColumn[]>([
-      {
-        key: 'itemCode',
-        label: 'รหัสสินค้า'
-      },
-      { key: 'itemName', label: 'ชื่อสินค้า' },
-      { key: 'unitName', label: 'หน่วย' },
-      { key: 'itemPrice', label: 'ราคา' }
-    ])
-    const itemData = ref<Item[]>([])
-    const option = ref<TableOption>({
-      actionLabel: 'ดำเนินการ'
-    })
-    const unitDropdownOption = computed((): Option<number>[] =>
-      unitDropdown.value.map((e) => {
-        return {
-          id: e.unitId!,
-          label: e.unitName!
-        }
-      })
-    )
-    const itemForm = ref<ItemForm>({ itemPrice: 0, itemCode: '', itemName: '' })
-    const unitSelect = ref<number>(-1)
-    const openModal = ref(false)
-    const titleModal = ref('เพิ่มสินค้า')
-    async function saveChange() {
-      let _statusCode = 0
-      if (!itemForm.value.unitId) {
-        toast.error('ไม่สำเร็จ', 'กรุณาเลือกหน่วยนับ')
-        return
-      }
-      const idloader = crypto.randomUUID()
-      loader.setLoadingOn(idloader)
-      const itemApiForm: ItemApiRequest = {
-        ...itemForm.value,
-        unitId: itemForm.value.unitId!
-      }
-      if (titleModal.value === 'เพิ่มสินค้า') {
-        const { statusCode } = await itemApi.createItem(itemApiForm)
-        _statusCode = statusCode
-      } else {
-        const { statusCode } = await itemApi.updateItem(itemApiForm)
-        _statusCode = statusCode
-      }
-      if (_statusCode === status.createSuccess || _statusCode === status.updateSuccess) {
-        toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
-      } else {
-        toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
-      }
-      openModal.value = false
-      itemForm.value = {
-        itemCode: '',
-        itemName: '',
-        itemPrice: 0,
-        unitId: undefined
-      }
-      await getItemData()
-      loader.setLoadingOff(idloader)
-    }
-
-    async function deleteItem(data: Item) {
-      if (await confirmDialog.value?.getConfirmResult()) {
-        const idloader = crypto.randomUUID()
-        loader.setLoadingOn(idloader)
-        const { statusCode } = await itemApi.deleteItem(data.itemId!)
-        if (statusCode === status.deleteSuccess) {
-          toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
-        } else {
-          toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
-        }
-        await getItemData()
-        loader.setLoadingOff(idloader)
-      }
-    }
-    async function modalOpen(item: ItemForm | null = null) {
-      const idloader = crypto.randomUUID()
-      loader.setLoadingOn(idloader)
-      await getUnitData()
-      if (item) {
-        titleModal.value = 'แก้ไขสินค้า'
-        itemForm.value = item!
-      } else {
-        titleModal.value = 'เพิ่มสินค้า'
-        itemForm.value.itemCode = ''
-        itemForm.value.itemName = ''
-        itemForm.value.itemPrice = 0
-      }
-      loader.setLoadingOff(idloader)
-      openModal.value = true
-    }
-
-    function closeDialog() {
-      openModal.value = false
-      itemForm.value = {
-        itemCode: '',
-        itemName: '',
-        itemPrice: 0,
-        unitId: undefined
-      }
-    }
-    async function getItemData() {
-      const { data } = await itemApi.getItem()
-      itemData.value = data
-    }
-    async function getUnitData() {
-      const { data } = await unitApi.getUnit()
-      unitDropdown.value = data
-      itemForm.value.unitId = unitDropdown.value[0].unitId
-    }
-    onMounted(async () => {
-      const idloader = crypto.randomUUID()
-      loader.setLoadingOn(idloader)
-      await getItemData()
-      loader.setLoadingOff(idloader)
-    })
-
+  { key: 'itemName', label: 'ชื่อสินค้า' },
+  { key: 'unitName', label: 'หน่วย' },
+  { key: 'itemPrice', label: 'ราคา' }
+])
+const itemData = ref<Item[]>([])
+const option = ref<TableOption>({
+  actionLabel: 'ดำเนินการ'
+})
+const unitDropdownOption = computed((): Option<number>[] =>
+  unitDropdown.value.map((e) => {
     return {
-      columnData,
-      option,
-      itemData,
-      openModal,
-      titleModal,
-      unitDropdownOption,
-      saveChange,
-      deleteItem,
-      modalOpen,
-      closeDialog,
-      itemDropdown: unitDropdown,
-      itemForm: itemForm,
-      unitSelect,
-      confirmDialog,
-      modalOption
+      id: e.unitId!,
+      label: e.unitName!
     }
+  })
+)
+const itemForm = ref<ItemForm>({ itemPrice: 0, itemCode: '', itemName: '' })
+const openModal = ref(false)
+const titleModal = ref('เพิ่มสินค้า')
+async function saveChange() {
+  let _statusCode = 0
+  if (!itemForm.value.unitId) {
+    toast.error('ไม่สำเร็จ', 'กรุณาเลือกหน่วยนับ')
+    return
   }
+  const idloader = crypto.randomUUID()
+  loader.setLoadingOn(idloader)
+  const itemApiForm: ItemApiRequest = {
+    ...itemForm.value,
+    unitId: itemForm.value.unitId!
+  }
+  if (titleModal.value === 'เพิ่มสินค้า') {
+    const { statusCode } = await itemApi.createItem(itemApiForm)
+    _statusCode = statusCode
+  } else {
+    const { statusCode } = await itemApi.updateItem(itemApiForm)
+    _statusCode = statusCode
+  }
+  if (_statusCode === status.createSuccess || _statusCode === status.updateSuccess) {
+    toast.success('สำเร็จ', 'ดำเนินการสำเร็จ')
+  } else {
+    toast.error('ไม่สำเร็จ', 'ไม่สามารถดำเนินการได้')
+  }
+  openModal.value = false
+  itemForm.value = {
+    itemCode: '',
+    itemName: '',
+    itemPrice: 0,
+    unitId: undefined
+  }
+  await getItemData()
+  loader.setLoadingOff(idloader)
+}
+
+async function deleteItem(data: Item) {
+  if (await confirmDialog.value?.getConfirmResult()) {
+    const idloader = crypto.randomUUID()
+    loader.setLoadingOn(idloader)
+    const { statusCode } = await itemApi.deleteItem(data.itemId!)
+    if (statusCode === status.deleteSuccess) {
+      toast.success('สำเร็จ', 'ลบสินค้าสำเร็จ')
+    } else {
+      toast.error('ไม่สำเร็จ', 'ไม่สามารถลบสินค้าได้')
+    }
+    await getItemData()
+    loader.setLoadingOff(idloader)
+  }
+}
+async function modalOpen(item: ItemForm | null = null) {
+  const idloader = crypto.randomUUID()
+  loader.setLoadingOn(idloader)
+  await getUnitData()
+  if (item) {
+    titleModal.value = 'แก้ไขสินค้า'
+    itemForm.value = item!
+  } else {
+    titleModal.value = 'เพิ่มสินค้า'
+    itemForm.value.itemCode = ''
+    itemForm.value.itemName = ''
+    itemForm.value.itemPrice = 0
+  }
+  loader.setLoadingOff(idloader)
+  openModal.value = true
+}
+
+function closeDialog() {
+  openModal.value = false
+  itemForm.value = {
+    itemCode: '',
+    itemName: '',
+    itemPrice: 0,
+    unitId: undefined
+  }
+}
+async function getItemData() {
+  const { data } = await itemApi.getItem()
+  itemData.value = data
+}
+async function getUnitData() {
+  const { data } = await unitApi.getUnit()
+  unitDropdown.value = data
+  itemForm.value.unitId = unitDropdown.value[0].unitId
+}
+onMounted(async () => {
+  const idloader = crypto.randomUUID()
+  loader.setLoadingOn(idloader)
+  await getItemData()
+  loader.setLoadingOff(idloader)
 })
 </script>
 

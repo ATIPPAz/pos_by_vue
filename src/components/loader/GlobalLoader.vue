@@ -3,18 +3,11 @@
     <div class="loader"></div>
   </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import { ref, defineComponent, watch, inject } from 'vue'
 import { loaderPluginSymbol } from '@/plugins/loading'
-export default defineComponent({
-  setup() {
-    const loader = inject(loaderPluginSymbol)!
-    const loadingState = loader.loadingState
-    return {
-      loadingState
-    }
-  }
-})
+const loader = inject(loaderPluginSymbol)!
+const loadingState = loader.loadingState
 </script>
 <style scoped>
 .loader-block {

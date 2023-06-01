@@ -11,18 +11,11 @@
     <div class="toast-content">{{ toastState.content }}</div>
   </div>
 </template>
-<script lang="ts">
-import { defineComponent, inject } from 'vue'
+<script lang="ts" setup>
+import { inject } from 'vue'
 import { toastPluginSymbol } from '@/plugins/toast'
-export default defineComponent({
-  setup() {
-    const toast = inject(toastPluginSymbol)!
-    const toastState = toast.toastState
-    return {
-      toastState
-    }
-  }
-})
+const toast = inject(toastPluginSymbol)!
+const toastState = toast.toastState
 </script>
 <style scoped>
 .toast {
