@@ -309,6 +309,7 @@ async function saveReceipt() {
   if (statusCode === status.createSuccess) {
     toast?.success('สำเร็จ', 'สร้างสินค้ารายการสั่งซื้อสำเร็จ')
     receiptDetail.value = []
+    receiptTradeDiscount.value = 0
   } else {
     toast?.error('ไม่สำเร็จ', 'ไม่สามารถสร้างรายการซื้อสินค้าได้')
   }
