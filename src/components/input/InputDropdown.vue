@@ -7,22 +7,13 @@
 </template>
 <script setup lang="ts">
 import type { Option } from '@/interface/dropdown'
-import { computed, type PropType } from 'vue'
+import { computed } from 'vue'
 
-const props = defineProps({
-  options: {
-    type: Array as PropType<Option[]>,
-    required: true
-  },
-  modelValue: {
-    type: Object as PropType<any>
-  }
-})
-const emit = defineEmits({
-  'update:modelValue'(value: any) {
-    return true
-  }
-})
+const props = defineProps<{
+  options: Option[]
+  modelValue: any
+}>()
+const emit = defineEmits<{ (e: 'update:modelValue', value: any): void }>()
 
 const optionSelect = computed({
   get() {

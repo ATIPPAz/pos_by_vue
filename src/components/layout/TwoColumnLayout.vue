@@ -5,11 +5,6 @@
     <slot name="right" />
   </main>
 </template>
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({})
-</script>
 <style scoped>
 .grid-container {
   display: grid;

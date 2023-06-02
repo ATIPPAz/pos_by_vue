@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { PropType } from 'vue'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import { useSlots } from 'vue'
 
@@ -56,31 +55,12 @@ const slots = useSlots()
 const idRowNumber = 'idRowNumber'
 const idRowAction = 'idRowAction'
 
-const props = defineProps({
-  column: {
-    type: Array as PropType<IColumn[]>,
-    required: true,
-    default: () => []
-  },
-  data: {
-    type: Array as PropType<any[]>,
-    default: () => []
-  },
-  selectIndexRow: {
-    type: Number,
-    default: -1
-  },
-  option: {
-    type: Object as PropType<TableOption>,
-    default: () => {
-      return {
-        pagination: 10,
-        rowNumber: true,
-        actionLabel: 'action'
-      }
-    }
-  }
-})
+const props = defineProps<{
+  column: IColumn[]
+  data: any[]
+  selectIndexRow: number
+  option: TableOption
+}>()
 
 const emit = defineEmits<{
   (e: 'update:selectIndexRow', value: any): void

@@ -77,15 +77,11 @@ import { DataTable } from '@/components/dataTable'
 import { ref } from 'vue'
 import type { ReceiptForm } from '@/interface/receipt'
 import type { IColumn } from '@/interface/dataTable'
-import type { PropType } from 'vue'
 import { computed } from 'vue'
 
-const props = defineProps({
-  receiptProp: {
-    type: Object as PropType<ReceiptForm>,
-    required: true
-  }
-})
+const props = defineProps<{
+  receiptProp: ReceiptForm
+}>()
 
 const columnsData = ref<IColumn[]>([
   {

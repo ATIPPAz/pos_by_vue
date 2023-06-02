@@ -18,12 +18,9 @@ import { ReceiptViewDetail } from '@/components/receiptView'
 import type { ModalOption } from '@/interface/modal'
 import type { ReceiptForm } from '@/interface/receipt'
 
-const props = defineProps({
-  receiptData: {
-    type: Object as PropType<ReceiptForm>,
-    required: true
-  }
-})
+const props = defineProps<{
+  receiptData: ReceiptForm
+}>()
 
 const open = ref(false)
 function openModal() {

@@ -46,13 +46,9 @@ import type { PropType } from 'vue'
 import type { Item } from '@/interface/item'
 import { computed } from 'vue'
 
-const props = defineProps({
-  allItems: {
-    type: Array as PropType<Item[]>,
-    required: true
-  }
-  // option: { type: Object as PropType<IModalSelectItemOption>, required: true }
-})
+const props = defineProps<{
+  allItems: Item[]
+}>()
 
 const open = ref(false)
 const selectedIndex = ref<number>(-1)

@@ -26,25 +26,16 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue'
 import { computed } from 'vue'
 import type { ModalOption } from '@/interface/modal'
-const props = defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-    required: true
-  },
-  option: {
-    type: Object as PropType<ModalOption>,
-    required: false
-  }
-})
-const emit = defineEmits({
-  'update:open'(value: boolean) {
-    return true
-  }
-})
+const props = defineProps<{
+  open: boolean
+  option: ModalOption
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:open', value: boolean): void
+}>()
 const style = computed(() => {
   return props.option?.style ? { ...props.option.style } : { width: '400px' }
 })
