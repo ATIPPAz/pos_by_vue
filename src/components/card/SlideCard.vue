@@ -15,7 +15,10 @@
     <div class="flex-item" style="margin-top: 8px"><slot name="right" /></div>
   </div>
 </template>
-
+<script setup lang="ts">
+const props = defineProps<{ indexSelect: number; dataLength: number }>()
+const emits = defineEmits<{ (e: 'update:indexSelect', value: number): void }>()
+</script>
 <style scoped>
 .card-slide {
   border-radius: 8px;
