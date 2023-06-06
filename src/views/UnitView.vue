@@ -51,7 +51,11 @@
           >
             แก้ไข
           </button>
-          <button @click="deleteUnit(slideUnitItem)" class="red" :disabled="!slideUnitItem">
+          <button
+            @click="deleteUnit(slideUnitItem)"
+            :class="!!slideUnitItem ? { red: true } : {}"
+            :disabled="!slideUnitItem"
+          >
             ลบ
           </button>
         </template>
@@ -159,6 +163,7 @@ async function deleteUnit(data: Unit | undefined) {
     }
     await getUnit()
     loader.setLoadingOff(idloader)
+    selectUnitIndex.value = -1
   }
 }
 async function saveChange() {

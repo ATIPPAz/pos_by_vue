@@ -205,6 +205,7 @@ async function deleteItem(data: Item) {
     }
     await getItemData()
     loader.setLoadingOff(idloader)
+    selectUnitIndex.value = -1
   }
 }
 async function modalOpen(item: ItemForm | null = null) {
