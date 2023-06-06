@@ -15,7 +15,7 @@
           v-for="(row, index) in dataTable"
           :key="index"
           :class="
-            selectIndexRow >= 0
+            selectIndexRow !== undefined && selectIndexRow !== null && selectIndexRow >= 0
               ? selectIndexRow === index
                 ? { 'f-blue': true }
                 : { 'f-black': true }
@@ -58,8 +58,8 @@ const idRowAction = 'idRowAction'
 const props = defineProps<{
   column: IColumn[]
   data: any[]
-  selectIndexRow: number
-  option: TableOption
+  selectIndexRow?: number
+  option?: TableOption
 }>()
 
 const emit = defineEmits<{
@@ -68,14 +68,14 @@ const emit = defineEmits<{
 
 const columnInfos = computed(() => {
   const columnInfos: IColumn[] = []
-  if (props.option.rowNumber || props.option.rowNumber === undefined) {
+  if (props.option && (props.option.rowNumber || props.option.rowNumber === undefined)) {
     columnInfos.push({ key: idRowNumber, label: 'No.' })
   }
   for (const col of props.column) {
     columnInfos.push(col)
   }
   if (hasActionSlot.value) {
-    columnInfos.push({ key: idRowAction, label: props.option.actionLabel ?? 'action' })
+    columnInfos.push({ key: idRowAction, label: props.option?.actionLabel ?? 'action' })
   }
   return columnInfos
 })

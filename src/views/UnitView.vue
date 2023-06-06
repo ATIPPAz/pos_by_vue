@@ -32,7 +32,11 @@
       </div>
     </template>
     <template #right>
-      <SlideCard style="width: 100%">
+      <SlideCard
+        v-model:index-select="selectUnitIndex"
+        :data-length="unitData.length"
+        style="width: 100%"
+      >
         <template #head> <h1>Unit Detail</h1> </template>
         <template #body>
           <b>ชื่อหน่วย</b><br />
@@ -51,32 +55,18 @@
             ลบ
           </button>
         </template>
-        <template #left>
+        <template #left="{ disabled }">
           <h1
-            :style="selectUnitIndex > 0 ? { cursor: 'pointer' } : { cursor: 'not-allowed' }"
-            :class="selectUnitIndex > 0 ? { 'f-black': true } : { 'f-gray': true }"
-            @click="selectUnitIndex > 0 ? (selectUnitIndex -= 1) : (selectUnitIndex = 0)"
+            :style="!disabled ? { cursor: 'pointer' } : { cursor: 'not-allowed' }"
+            :class="!disabled ? { 'f-black': true } : { 'f-gray': true }"
           >
             &lt;
           </h1>
         </template>
-        <template #right
+        <template #right="{ disabled }"
           ><h1
-            :style="
-              selectUnitIndex < unitData.length - 1 && selectUnitIndex >= 0
-                ? { cursor: 'pointer' }
-                : { cursor: 'not-allowed' }
-            "
-            :class="
-              selectUnitIndex < unitData.length - 1 && selectUnitIndex >= 0
-                ? { 'f-black': true }
-                : { 'f-gray': true }
-            "
-            @click="
-              selectUnitIndex < unitData.length - 1
-                ? (selectUnitIndex += 1)
-                : (selectUnitIndex = unitData.length - 1)
-            "
+            :style="!disabled ? { cursor: 'pointer' } : { cursor: 'not-allowed' }"
+            :class="!disabled ? { 'f-black': true } : { 'f-gray': true }"
           >
             &gt;
           </h1>

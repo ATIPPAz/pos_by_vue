@@ -30,7 +30,7 @@ import { computed } from 'vue'
 import type { ModalOption } from '@/interface/modal'
 const props = defineProps<{
   open: boolean
-  option: ModalOption
+  option?: ModalOption
 }>()
 
 const emit = defineEmits<{

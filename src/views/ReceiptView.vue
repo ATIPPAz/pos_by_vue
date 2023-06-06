@@ -49,7 +49,7 @@ const columnsData = ref<IColumn[]>([
     label: 'เลขที่อ้างอิง'
   },
   { key: 'receiptDate', label: 'วันที่' },
-  { key: 'receiptGrandTotal', label: 'GrandTotal' }
+  { key: 'receiptGrandTotal', label: 'Grand Total' }
 ])
 const option = ref<TableOption>({
   actionLabel: 'ดำเนินการ'

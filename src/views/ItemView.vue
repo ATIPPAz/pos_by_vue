@@ -1,20 +1,76 @@
 <template>
-  <h1>ตั้งค่าสินค้า</h1>
-  <div class="j-end" style="margin-bottom: 14px">
-    <button class="blue" @click="modalOpen()">เพิ่ม</button>
-  </div>
-  <DataTable :column="columnData" :option="option" :data="itemData">
-    <template #cell-itemCode="data">{{ data.data.itemCode }} </template>
-    <template #cell-itemName="data">{{ data.data.itemName }} </template>
-    <template #cell-unitName="data">{{ data.data.unitName }} </template>
-    <template #cell-itemPrice="data">{{ data.data.itemPrice }} </template>
-    <template #cell-idRowAction="data">
+  <TwoColumnLayout>
+    <template #title> <h1>ตั้งค่าสินค้า</h1></template>
+    <template #left>
       <div>
-        <button @click="modalOpen(data.data)" class="yellow" style="margin-right: 8px">edit</button>
-        <button @click="deleteItem(data.data)" class="red">delete</button>
+        <div class="j-end" style="margin-bottom: 14px">
+          <button class="blue" @click="modalOpen()">เพิ่ม</button>
+        </div>
+        <DataTable
+          v-model:selectIndexRow="selectUnitIndex"
+          :column="columnData"
+          :option="option"
+          :data="itemData"
+        >
+          <template #cell-itemCode="data">{{ data.data.itemCode }} </template>
+          <template #cell-itemName="data">{{ data.data.itemName }} </template>
+          <template #cell-unitName="data">{{ data.data.unitName }} </template>
+          <template #cell-itemPrice="data">{{ data.data.itemPrice }} </template>
+        </DataTable>
       </div>
     </template>
-  </DataTable>
+    <template #right>
+      <SlideCard
+        v-model:index-select="selectUnitIndex"
+        :data-length="itemData.length"
+        style="width: 100%"
+      >
+        <template #head> <h1>Item Detail</h1> </template>
+        <template #body>
+          <b>รหัสสินค้า</b><br />
+          {{ slideItem ? slideItem.itemCode : '-' }}<br /><br />
+          <b>ชื่อสินค้า</b><br />
+          {{ slideItem ? slideItem.itemName : '-' }}<br /><br />
+          <b>ราคา</b><br />
+          {{ slideItem ? slideItem.itemPrice : '-' }}
+        </template>
+        <template #footer>
+          <button
+            style="margin-right: 8px"
+            :class="!!slideItem ? { yellow: true } : {}"
+            :disabled="!slideItem"
+            @click="modalOpen(slideItem as ItemForm)"
+          >
+            แก้ไข
+          </button>
+          <button
+            @click="deleteItem(slideItem as Item)"
+            :class="!!slideItem ? { red: true } : {}"
+            :disabled="!slideItem"
+          >
+            ลบ
+          </button>
+        </template>
+        <template #left="{ disabled }">
+          <h1
+            :style="!disabled ? { cursor: 'pointer' } : { cursor: 'not-allowed' }"
+            :class="!disabled ? { 'f-black': true } : { 'f-gray': true }"
+          >
+            &lt;
+          </h1>
+        </template>
+        <template #right="{ disabled }"
+          ><h1
+            :style="!disabled ? { cursor: 'pointer' } : { cursor: 'not-allowed' }"
+            :class="!disabled ? { 'f-black': true } : { 'f-gray': true }"
+          >
+            &gt;
+          </h1>
+        </template>
+      </SlideCard></template
+    >
+  </TwoColumnLayout>
+
   <ModalDialog v-model:open="openModal" :option="modalOption">
     <template #header>
       <p class="modal-title">{{ titleModal }}</p>
@@ -48,6 +104,7 @@
 </template>
 
 <script setup lang="ts">
+import { SlideCard } from '@/components/card'
 import { ref, onMounted, inject, computed } from 'vue'
 import { ModalDialog } from '@/components/modal'
 import { InputDropdown } from '@/components/input'
@@ -58,7 +115,7 @@ import type { ItemApiRequest } from '@/composables/api/useItemApi'
 import type { Item, ItemForm } from '@/interface/item'
 import { DataTable } from '@/components/dataTable'
 import type { ModalOption } from '@/interface/modal'
-
+import { TwoColumnLayout } from '@/components/layout'
 import type { IColumn, TableOption } from '@/interface/dataTable'
 import type { Unit } from '@/interface/unit'
 import { ConfirmModal } from '@/components/modal'
@@ -70,6 +127,12 @@ const loader = inject(loaderPluginSymbol)!
 const toast = inject(toastPluginSymbol)!
 const unitApi = useUnitApi()
 const itemApi = useItemApi()
+const slideItem = computed(() => {
+  return selectUnitIndex.value >= 0 && selectUnitIndex.value <= itemData.value.length - 1
+    ? itemData.value[selectUnitIndex.value]
+    : null
+})
+const selectUnitIndex = ref(-1)
 const confirmDialog = ref<InstanceType<typeof ConfirmModal>>()!
 const columnData = ref<IColumn[]>([
   {

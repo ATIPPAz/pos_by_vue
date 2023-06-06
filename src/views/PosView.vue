@@ -184,7 +184,7 @@ const receiptSubTotal = computed(() => {
   return receiptTotalBeforeDiscount.value - receiptTotalDiscount.value
 })
 const receiptData = computed(() => {
-  const detail = receiptDetailsData.value.slice(0, -1)
+  const detail = receiptDetailsData.value.slice(0, -1).map((e) => ({ ...e }))
   detail.forEach((e, index) => {
     const amount = calAmount(index)
     const discount = calDiscount(index)
@@ -302,15 +302,15 @@ function formatDateForDisplay(date: Date): string {
 async function saveReceipt() {
   const idloader = crypto.randomUUID()
   loader?.setLoadingOn(idloader)
-  const detail = receiptDetailsData.value.slice(0, -1)
-  detail.forEach((e, index) => {
-    const amount = calAmount(index)
-    const discount = calDiscount(index)
-    e.itemAmount = amount
-    e.itemDiscount = discount
-  })
+  // const detail = receiptDetailsData.value.slice(0, -1)
+  // detail.forEach((e, index) => {
+  //   const amount = calAmount(index)
+  //   const discount = calDiscount(index)
+  //   e.itemAmount = amount
+  //   e.itemDiscount = discount
+  // })
   const { statusCode } = await receiptApi.createReceipt({
-    receiptdetails: detail,
+    receiptdetails: receiptData.value.receiptdetails,
     receiptGrandTotal: receiptGrandTotal.value,
     receiptSubTotal: receiptSubTotal.value,
     receiptTotalBeforeDiscount: receiptTotalBeforeDiscount.value,
